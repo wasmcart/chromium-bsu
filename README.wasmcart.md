@@ -8,6 +8,12 @@ core in RetroArch.
 Upstream is unchanged in spirit. This is a real source port, not a rewrite: the
 game logic, assets and feel are the original's.
 
+![Chromium B.S.U. title screen and menu, running as a wasmcart cart](docs/screenshot-menu.png)
+
+![Chromium B.S.U. in play: the player ship firing over scrolling metal terrain, with ammo gauges and HUD](docs/screenshot-gameplay.png)
+
+Both captured from the cart itself, through a wasmcart host.
+
 ## Build
 
 Needs the [Emscripten SDK](https://emscripten.org) (`emcc`/`em++` on `PATH`).
