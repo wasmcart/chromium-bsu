@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -106,53 +107,35 @@ void MenuGL::loadTextures()
 	csrTex    = Image::load(dataLoc("png/heroAmmoFlash00.png"));
 	updwnTex  = Image::load(dataLoc("png/menu_updown.png"));
 	//-- Environment map
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+	renderer_tex_geni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+	renderer_tex_geni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	envTex = Image::load(dataLoc("png/reflect.png"), IMG_BUILDMIPMAPS, IMG_SOLID, GL_CLAMP, GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR);
 
-	listChrom = glGenLists(1);
-	listBSU = glGenLists(1);
-	createLists( (thickText = true) );
+	thickText = true;
 }
 
 //----------------------------------------------------------
 void MenuGL::deleteTextures()
 {
-	glDeleteTextures(1, &elecTex);
-	glDeleteTextures(1, &backTex);
-	glDeleteTextures(1, &envTex);
-	glDeleteTextures(1, &csrTex);
-	glDeleteTextures(1, &updwnTex);
+	renderer_delete_textures(1, &elecTex);
+	renderer_delete_textures(1, &backTex);
+	renderer_delete_textures(1, &envTex);
+	renderer_delete_textures(1, &csrTex);
+	renderer_delete_textures(1, &updwnTex);
 	elecTex	= 0;
 	backTex	= 0;
 	envTex	= 0;
 	csrTex	= 0;
 	updwnTex = 0;
 
-	glDeleteLists(listChrom, 1);
-	glDeleteLists(listBSU, 1);
+	/* display lists removed — title text rendered directly */
 }
 
 //----------------------------------------------------------
 void MenuGL::createLists(bool thick)
 {
-	Config* config = Config::instance();
-
-	if(!thick)
-	{
-		if( config->debug() ) fprintf(stderr, _("ATTENTION: Using 'thin' text to improve framerate...\n"));
-	}
-	titleTilt	= -10.0;
-
-	if( config->debug() ) fprintf(stderr, _("MenuGL::createLists\n"));
-
-	glNewList(listChrom, GL_COMPILE);
-	textGeometryChromium(thick);
-	glEndList();
-
-	glNewList(listBSU, GL_COMPILE);
-	textGeometryBSU(thick);
-	glEndList();
+	thickText = thick;
+	titleTilt = -10.0;
 }
 
 static const char *skillString(int i)
@@ -192,27 +175,27 @@ void MenuGL::drawGL()
 	HiScore	*hiScore = HiScore::getInstance();
 	int		i;
 
-	if(--textCount < 0)
+	textCount -= game->speedAdj; if(textCount < 0)
 	{
 		textCount = 500;
 //		textAngle = 360.0;
 	}
 	if(textAngle > 0.0)
-		textAngle -=  5.0;
+		textAngle -= 5.0*game->speedAdj;
 	else
 		textAngle  =  0.0;
 
-//	glClearColor(0.27451, 0.235294, 0.392157, 1.0);
+//	renderer_set_clear_color(0.27451, 0.235294, 0.392157, 1.0);
 	//-- Clear buffers
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderer_clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//-- Place camera
-	glLoadIdentity();
-	glTranslatef(0.0, 0.0, config->zTrans());
+	renderer_load_identity();
+	renderer_translate(0.0, 0.0, config->zTrans());
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glColor4f(1.0, 1.0, 1.0, 1.0);
+	renderer_set_color(1.0, 1.0, 1.0, 1.0);
 
 	//-- Draw background
 	game->ground->drawGL();
@@ -227,70 +210,70 @@ void MenuGL::drawGL()
 	float	inc		=  -txtHeight*2.5;
 
 	//----- Draw credits texture --------------------------------
-	glPushMatrix();
+	renderer_push_matrix();
 		// NOTE: corners of back tex is white, alpha 1 and
 		// we are in modulate blend...
-		glBindTexture(GL_TEXTURE_2D, backTex);
-		glTexCoord2f(1.0, 0.0);
+		renderer_bind_texture( backTex);
+		renderer_set_texcoord(1.0, 0.0);
 
 		//-- darken
-		glBegin(GL_QUADS);
-		glColor4f(0.0, 0.0, 0.0, 0.8);
-			glVertex3f( szx,  szy+0.25-3.0, 10.0);
-			glVertex3f(-szx,  szy+0.25-3.0, 10.0);
-		glColor4f(0.0, 0.0, 0.0, 0.4);
-			glVertex3f(-szx, -13.0, 10.0);
-			glVertex3f( szx, -13.0, 10.0);
-		glEnd();
+		renderer_begin(DRAW_QUADS);
+		renderer_set_color(0.0, 0.0, 0.0, 0.8);
+			renderer_vertex( szx,  szy+0.25-3.0, 10.0);
+			renderer_vertex(-szx,  szy+0.25-3.0, 10.0);
+		renderer_set_color(0.0, 0.0, 0.0, 0.4);
+			renderer_vertex(-szx, -13.0, 10.0);
+			renderer_vertex( szx, -13.0, 10.0);
+		renderer_end();
 
-		glBegin(GL_QUADS);
-		glColor4f(0.0, 0.0, 0.0, mssgAlpha);
-			glVertex3f( 16.0,  -10.7, 10.0);
-			glVertex3f(-16.0,  -10.7, 10.0);
-		glColor4f(0.0, 0.0, 0.0, mssgAlpha);
-			glVertex3f(-16.0, -11.9, 10.0);
-			glVertex3f( 16.0, -11.9, 10.0);
-		glEnd();
+		renderer_begin(DRAW_QUADS);
+		renderer_set_color(0.0, 0.0, 0.0, mssgAlpha);
+			renderer_vertex( 16.0,  -10.7, 10.0);
+			renderer_vertex(-16.0,  -10.7, 10.0);
+		renderer_set_color(0.0, 0.0, 0.0, mssgAlpha);
+			renderer_vertex(-16.0, -11.9, 10.0);
+			renderer_vertex( 16.0, -11.9, 10.0);
+		renderer_end();
 
 		szx = 12.0;
 		szy =  txtHeight*0.5;
-		glPushMatrix();
-		glTranslatef(left, top+(inc*curSel), 10.0);
-		glBegin(GL_QUADS);
-			glColor4f(0.5, 0.5, 1.0, 1.0);
-			glVertex3f(-szx,  szy*3.0, 0.0);
-			glVertex3f(-szx, -szy, 0.0);
-			glColor4f(0.2, 0.2, 1.0, 0.0);
-			glVertex3f( szx, -szy, 0.0);
-			glVertex3f( szx,  szy*3.0, 0.0);
-		glEnd();
+		renderer_push_matrix();
+		renderer_translate(left, top+(inc*curSel), 10.0);
+		renderer_begin(DRAW_QUADS);
+			renderer_set_color(0.5, 0.5, 1.0, 1.0);
+			renderer_vertex(-szx,  szy*3.0, 0.0);
+			renderer_vertex(-szx, -szy, 0.0);
+			renderer_set_color(0.2, 0.2, 1.0, 0.0);
+			renderer_vertex( szx, -szy, 0.0);
+			renderer_vertex( szx,  szy*3.0, 0.0);
+		renderer_end();
 		drawIndicator();
 
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
 		drawElectric();
-		glPopMatrix();
-		glColor4f(1.0, 1.0, 1.0, 0.9);
+		renderer_pop_matrix();
+		renderer_set_color(1.0, 1.0, 1.0, 0.9);
 		float sc = 0.035;
 		for(i = 0; i < NumSelections; i++)
 		{
-			glPushMatrix();
-			glTranslatef(left, top+(inc*i), 10.0);
-			glRotatef(textAngle, 1.0, 0.0, 0.0);
-			glScalef(sc, sc*0.75, 1.0);
+			renderer_push_matrix();
+			renderer_translate(left, top+(inc*i), 10.0);
+			renderer_rotate(textAngle, 1.0, 0.0, 0.0);
+			renderer_scale(sc, sc*0.75, 1.0);
 			game->text->Render(menuText[i]);
-			glPopMatrix();
+			renderer_pop_matrix();
 		}
 
 		{
-			float f = (float)-game->frame;
+			float f = game->gameTime * -50.0f;
 			float r = cos(f*0.02);
-			glPushMatrix();
-//			glColor4f(1.0+r, r, r, 0.6+0.2*r);
-			glColor4f(1.0, 1.0, 1.0, 0.6+0.2*r);
-			glTranslatef(-18.75, -8.5, 0.0);
-			glScalef(sc, sc*0.75, 1.0);
+			renderer_push_matrix();
+//			renderer_set_color(1.0+r, r, r, 0.6+0.2*r);
+			renderer_set_color(1.0, 1.0, 1.0, 0.6+0.2*r);
+			renderer_translate(-18.75, -8.5, 0.0);
+			renderer_scale(sc, sc*0.75, 1.0);
 			game->text->Render(_("high scores"));
-			glTranslatef(-100.0, -30.0, 0.0);
+			renderer_translate(-100.0, -30.0, 0.0);
 			char buf[16];
 			int i;
 			float trans;
@@ -312,17 +295,17 @@ void MenuGL::drawGL()
 				f += 30.0;
 				r = cos(f*0.02);
 				if(i == recentHiScore)
-					glColor4f(1.5, 0.5, 0.5, 0.6+0.1*r);
+					renderer_set_color(1.5, 0.5, 0.5, 0.6+0.1*r);
 				else
-					glColor4f(1.0, 1.0, 1.0, 0.2+0.2*r);
-//				glColor4f(0.5+r*0.5, 0.5, 0.25-r*0.25, 0.2+0.2*r);
+					renderer_set_color(1.0, 1.0, 1.0, 0.2+0.2*r);
+//				renderer_set_color(0.5+r*0.5, 0.5, 0.25-r*0.25, 0.2+0.2*r);
 				sprintf(buf, "%d", (int)hiScore->getScore(config->intSkill(), i) );
 				trans = 80.0 + game->text->Advance(_("high scores")) - game->text->Advance(buf);
-				glTranslatef( trans, 0.0, 0.0 );
+				renderer_translate( trans, 0.0, 0.0 );
 				game->text->Render(buf);
-				glTranslatef( -trans, -30.0, 0.0) ;
+				renderer_translate( -trans, -30.0, 0.0) ;
 			}
-			glPopMatrix();
+			renderer_pop_matrix();
 		}
 
 		//---- credits
@@ -336,65 +319,65 @@ void MenuGL::drawGL()
 				c = 0.0;
 			}
 			c += 0.2;
-			glPushMatrix();
+			renderer_push_matrix();
 			if(c > 25)	alpha = 0.4*(75.0-c)/50.0;
 			else		alpha = 0.4;
-			glColor4f(1.0, 1.0, 1.0, alpha);
+			renderer_set_color(1.0, 1.0, 1.0, alpha);
 			sc = 0.03;
-			glTranslatef(14.0, -11.5, 0.0);
-			glScalef(sc, sc, 1.0);
-			glTranslatef(-c*1.5, c, 0.0);
+			renderer_translate(14.0, -11.5, 0.0);
+			renderer_scale(sc, sc, 1.0);
+			renderer_translate(-c*1.5, c, 0.0);
 			if(c < 3)	n = (int)c;
 			else		n = 3;
 			if(n>0) game->text->Render(_("the"), n);
-			glTranslatef(c, -38+c, 0.0);
+			renderer_translate(c, -38+c, 0.0);
 			if(c < 10)	n = (int)(c-3);
 			else		n = 7;
 			if(n>0) game->text->Render(_("reptile"), n);
-			glTranslatef(c, -38+c, 0.0);
+			renderer_translate(c, -38+c, 0.0);
 			if(c < 16)	n = (int)c-10;
 			else		n = 6;
 			if(n>0) game->text->Render(_("labour"), n);
-			glTranslatef(c, -38+c, 0.0);
+			renderer_translate(c, -38+c, 0.0);
 			if(c < 23)	n = (int)(c-16);
 			else		n = 7;
 			if(n>0) game->text->Render(_("project"), n);
 			// font height is 23
-			glPopMatrix();
+			renderer_pop_matrix();
 		}
 
 		//-------- draw help message
 		if(mssgAlpha > 0.0)
 		{
 			if(mssgHelpOverride)
-				glColor4f(1.3, mssgAlpha, mssgAlpha, mssgAlpha);
+				renderer_set_color(1.3, mssgAlpha, mssgAlpha, mssgAlpha);
 			else
-				glColor4f(0.5, 0.5, 0.9, (0.2+mssgAlpha));
+				renderer_set_color(0.5, 0.5, 0.9, (0.2+mssgAlpha));
 			sc = 0.042;
-			glTranslatef(-19.5, -14.0, 0.0);
-			glScalef(sc, sc*0.75, 1.0);
+			renderer_translate(-19.5, -14.0, 0.0);
+			renderer_scale(sc, sc*0.75, 1.0);
 			size_t len = mbstowcs(NULL,mssgText,0);
 			unsigned int	ti = (unsigned int)(112.0*mssgAlpha);
 			if(ti > len) ti = len;
 			if(ti) game->text->Render(mssgText, ti);
-			mssgAlpha -= 0.004;
-			glColor4f(1.0, 1.0, 1.0, 1.0);
+			mssgAlpha -= 0.004*game->speedAdj;
+			renderer_set_color(1.0, 1.0, 1.0, 1.0);
 		}
 
 
 
-	glPopMatrix();
+	renderer_pop_matrix();
 
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glPushMatrix();
-	glTranslatef(0.0, 4.75, 25.0);
-	glColor4f(1.0, 1.0, 1.0, 1.0);
-	glDepthMask(GL_FALSE);	//XXX Hack to make Voodoo3 XF4 work
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+	renderer_push_matrix();
+	renderer_translate(0.0, 4.75, 25.0);
+	renderer_set_color(1.0, 1.0, 1.0, 1.0);
+	renderer_set_depth_mask(GL_FALSE);	//XXX Hack to make Voodoo3 XF4 work
 	drawTitleBack();
-	glDepthMask(GL_TRUE);	//XXX Hack to make Voodoo3 XF4 work
+	renderer_set_depth_mask(GL_TRUE);	//XXX Hack to make Voodoo3 XF4 work
 	drawTitle();
-	glPopMatrix();
+	renderer_pop_matrix();
 
 //	//-- draw cursor...
 //	{
@@ -402,14 +385,14 @@ void MenuGL::drawGL()
 //		float y = Global::cursorPos[1]*12.45;
 //		float z = 10.0;
 //		float sz;
-//		glBindTexture(GL_TEXTURE_2D, csrTex);
+//		renderer_bind_texture( csrTex);
 //		sz = 0.2;
-//		glBegin(GL_QUADS);
-//		glTexCoord2f(1.0, 1.0); glVertex3f( x+sz, y+sz, z);
-//		glTexCoord2f(0.0, 1.0); glVertex3f( x-sz, y+sz, z);
-//		glTexCoord2f(0.0, 0.0); glVertex3f( x-sz, y-sz, z);
-//		glTexCoord2f(1.0, 0.0); glVertex3f( x+sz, y-sz, z);
-//		glEnd();
+//		renderer_begin(DRAW_QUADS);
+//		renderer_set_texcoord(1.0, 1.0); renderer_vertex( x+sz, y+sz, z);
+//		renderer_set_texcoord(0.0, 1.0); renderer_vertex( x-sz, y+sz, z);
+//		renderer_set_texcoord(0.0, 0.0); renderer_vertex( x-sz, y-sz, z);
+//		renderer_set_texcoord(1.0, 0.0); renderer_vertex( x+sz, y-sz, z);
+//		renderer_end();
 //	}
 
 	if(thickText && game->fps < 30)
@@ -500,51 +483,51 @@ void MenuGL::drawIndicator()
 			level = -5.0;
 			break;
 	}
-	glPushMatrix();
-		glTranslatef(0.0, -txtHeight, 0.0);
-		glBegin(GL_QUADS);
-			glColor4f(1.0, 1.0, 1.0, 0.3);
-			glVertex3f(szx+szy, szy, 0.0);
-			glVertex3f(   -szx, szy, 0.0);
-			glColor4f(1.0, 1.0, 1.0, 0.15);
-			glVertex3f(   -szx, 0.0, 0.0);
-			glVertex3f(    szx, 0.0, 0.0);
-		glEnd();
+	renderer_push_matrix();
+		renderer_translate(0.0, -txtHeight, 0.0);
+		renderer_begin(DRAW_QUADS);
+			renderer_set_color(1.0, 1.0, 1.0, 0.3);
+			renderer_vertex(szx+szy, szy, 0.0);
+			renderer_vertex(   -szx, szy, 0.0);
+			renderer_set_color(1.0, 1.0, 1.0, 0.15);
+			renderer_vertex(   -szx, 0.0, 0.0);
+			renderer_vertex(    szx, 0.0, 0.0);
+		renderer_end();
 
 		//-- draw level indicator and/or text
-		glPushMatrix();
+		renderer_push_matrix();
 		if(level > -1.0)
 		{
-			glBegin(GL_QUADS);
-				glColor4f(1.0, 0.0, 0.0, 1.0);
-				glVertex3f(szy+szx*level, szy, 0.0);
-				glVertex3f(          0.0, szy, 0.0);
-				glColor4f(0.0, 0.0, 0.0, 0.0);
-				glVertex3f(          0.0, 0.0, 0.0);
-				glVertex3f(    szx*level, 0.0, 0.0);
-			glEnd();
+			renderer_begin(DRAW_QUADS);
+				renderer_set_color(1.0, 0.0, 0.0, 1.0);
+				renderer_vertex(szy+szx*level, szy, 0.0);
+				renderer_vertex(          0.0, szy, 0.0);
+				renderer_set_color(0.0, 0.0, 0.0, 0.0);
+				renderer_vertex(          0.0, 0.0, 0.0);
+				renderer_vertex(    szx*level, 0.0, 0.0);
+			renderer_end();
 
 			//-- draw +/- buttons ---
 			float	bx = butWidth;
 			float	by = butHeight;
 			float	bo = butOffset;
-			glBindTexture(GL_TEXTURE_2D, updwnTex);
-			glBegin(GL_QUADS);
-				glColor4f(1.0, 1.0, 1.0, 0.6);
-				glTexCoord2f(1.0, 0.0);	glVertex3f(	 bx-bo,  by, 0.0);
-				glTexCoord2f(0.0, 0.0);	glVertex3f(	0.0-bo,  by, 0.0);
-				glTexCoord2f(0.0, 1.0);	glVertex3f(	0.0-bo, 0.0, 0.0);
-				glTexCoord2f(1.0, 1.0);	glVertex3f(  bx-bo, 0.0, 0.0);
-			glEnd();
+			renderer_bind_texture( updwnTex);
+			renderer_begin(DRAW_QUADS);
+				renderer_set_color(1.0, 1.0, 1.0, 0.6);
+				renderer_set_texcoord(1.0, 0.0);	renderer_vertex(	 bx-bo,  by, 0.0);
+				renderer_set_texcoord(0.0, 0.0);	renderer_vertex(	0.0-bo,  by, 0.0);
+				renderer_set_texcoord(0.0, 1.0);	renderer_vertex(	0.0-bo, 0.0, 0.0);
+				renderer_set_texcoord(1.0, 1.0);	renderer_vertex(  bx-bo, 0.0, 0.0);
+			renderer_end();
 
-			glColor4f(1.0, 1.0, 1.0, 0.5);
-			glTranslatef(11.0, 0.0, 0.0);
-			glScalef(sc, sc, 1.0);
+			renderer_set_color(1.0, 1.0, 1.0, 0.5);
+			renderer_translate(11.0, 0.0, 0.0);
+			renderer_scale(sc, sc, 1.0);
 			game->text->Render(buf);
 		}
-		glPopMatrix();
+		renderer_pop_matrix();
 
-	glPopMatrix();
+	renderer_pop_matrix();
 
 }
 
@@ -557,18 +540,18 @@ void MenuGL::drawElectric()
 		elecOffX = -5.0;
 	float szx = 30.0;
 	float szy = txtHeight;
-	glBindTexture(GL_TEXTURE_2D, elecTex);
-	glPushMatrix();
-	glTranslatef(0.0, txtHeight*0.5, 0.0);
-	glBegin(GL_QUADS);
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glTexCoord2f(   elecOffX, elecOffY+0.3); glVertex3f( -8.0,  szy, 0.0);
-		glTexCoord2f(   elecOffX,     elecOffY); glVertex3f( -8.0, -szy, 0.0);
-		glColor4f(0.0, 0.0, 0.1, 1.0);
-		glTexCoord2f(elecOffX-es,     elecOffY); glVertex3f(  szx, -szy, 0.0);
-		glTexCoord2f(elecOffX-es, elecOffY+0.3); glVertex3f(  szx,  szy, 0.0);
-	glEnd();
-	glPopMatrix();
+	renderer_bind_texture( elecTex);
+	renderer_push_matrix();
+	renderer_translate(0.0, txtHeight*0.5, 0.0);
+	renderer_begin(DRAW_QUADS);
+		renderer_set_color(1.0, 1.0, 1.0, 1.0);
+		renderer_set_texcoord(   elecOffX, elecOffY+0.3); renderer_vertex( -8.0,  szy, 0.0);
+		renderer_set_texcoord(   elecOffX,     elecOffY); renderer_vertex( -8.0, -szy, 0.0);
+		renderer_set_color(0.0, 0.0, 0.1, 1.0);
+		renderer_set_texcoord(elecOffX-es,     elecOffY); renderer_vertex(  szx, -szy, 0.0);
+		renderer_set_texcoord(elecOffX-es, elecOffY+0.3); renderer_vertex(  szx,  szy, 0.0);
+	renderer_end();
+	renderer_pop_matrix();
 }
 
 //----------------------------------------------------------
@@ -584,84 +567,84 @@ void MenuGL::drawTitleBack()
 	float	as = a/(w+a);
 	float	at = a/(h+a);
 
-	glBindTexture(GL_TEXTURE_2D, backTex);
-	glMatrixMode(GL_TEXTURE);
-	glPushMatrix();
+	renderer_bind_texture( backTex);
+	renderer_matrix_mode(GL_TEXTURE);
+	renderer_push_matrix();
 	static float amt = 0.0;
-	glTranslatef(amt*0.1, amt*0.5, 0.0);
-	glRotatef(-amt*100.0, 0.0, 1.0, 1.0);
-	amt -= 0.01;
+	renderer_translate(amt*0.1, amt*0.5, 0.0);
+	renderer_rotate(-amt*100.0, 0.0, 1.0, 1.0);
+	amt -= 0.01*game->speedAdj;
 	//-- Top right
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f(  w+a,  h  , 0.0);
-		glTexCoord2f(1.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f(  w+a,  h+a, 0.0);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f(  w  ,  h  , 0.0);
-		glTexCoord2f(1.0-as, 1.0   ); glColor4fv(clr_c);	glVertex3f(  w  ,  h+a, 0.0);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0,  h  , 0.0);
-		glTexCoord2f(0.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f(  0.0,  h+a, 0.0);
-	glEnd();
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(1.0   , 0.0   ); glColor4fv(clr_c);	glVertex3f(  w+a, 0.0, z);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f(  w+a,	h, 0.0);
-		glTexCoord2f(1.0-as, 0.0   ); glColor4fv(clr_w);	glVertex3f(  w  , 0.0, z);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f(  w  ,	h, 0.0);
-		glTexCoord2f(0.0   , 0.0   ); glColor4fv(clr_w);	glVertex3f(  0.0, 0.0, z);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0,	h, 0.0);
-	glEnd();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex(  w+a,  h  , 0.0);
+		renderer_set_texcoord(1.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  w+a,  h+a, 0.0);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  w  ,  h  , 0.0);
+		renderer_set_texcoord(1.0-as, 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  w  ,  h+a, 0.0);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0,  h  , 0.0);
+		renderer_set_texcoord(0.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  0.0,  h+a, 0.0);
+	renderer_end();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(1.0   , 0.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  w+a, 0.0, z);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex(  w+a,	h, 0.0);
+		renderer_set_texcoord(1.0-as, 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex(  w  , 0.0, z);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  w  ,	h, 0.0);
+		renderer_set_texcoord(0.0   , 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex(  0.0, 0.0, z);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0,	h, 0.0);
+	renderer_end();
 	//-- Top left
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0,  h  , 0.0);
-		glTexCoord2f(0.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f(  0.0,  h+a, 0.0);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f( -w  ,  h  , 0.0);
-		glTexCoord2f(1.0-as, 1.0   ); glColor4fv(clr_c);	glVertex3f( -w  ,  h+a, 0.0);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f( -w-a,  h  , 0.0);
-		glTexCoord2f(1.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f( -w-a,  h+a, 0.0);
-	glEnd();
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0   , 0.0   ); glColor4fv(clr_w);	glVertex3f(  0.0, 0.0, z);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0,	h, 0.0);
-		glTexCoord2f(1.0-as, 0.0   ); glColor4fv(clr_w);	glVertex3f( -w  , 0.0, z);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f( -w  ,	h, 0.0);
-		glTexCoord2f(1.0   , 0.0   ); glColor4fv(clr_c);	glVertex3f( -w-a, 0.0, z);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f( -w-a,	h, 0.0);
-	glEnd();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0,  h  , 0.0);
+		renderer_set_texcoord(0.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  0.0,  h+a, 0.0);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex( -w  ,  h  , 0.0);
+		renderer_set_texcoord(1.0-as, 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex( -w  ,  h+a, 0.0);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex( -w-a,  h  , 0.0);
+		renderer_set_texcoord(1.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex( -w-a,  h+a, 0.0);
+	renderer_end();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(0.0   , 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex(  0.0, 0.0, z);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0,	h, 0.0);
+		renderer_set_texcoord(1.0-as, 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex( -w  , 0.0, z);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex( -w  ,	h, 0.0);
+		renderer_set_texcoord(1.0   , 0.0   ); renderer_set_color_v(clr_c);	renderer_vertex( -w-a, 0.0, z);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex( -w-a,	h, 0.0);
+	renderer_end();
 	//-- bottom right
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f(  w+a,  -h, 0.0);
-		glTexCoord2f(1.0   , 0.0   ); glColor4fv(clr_c);	glVertex3f(  w+a, 0.0, z);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f(  w  ,  -h, 0.0);
-		glTexCoord2f(1.0-as, 0.0   ); glColor4fv(clr_w);	glVertex3f(  w  , 0.0, z);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0,  -h, 0.0);
-		glTexCoord2f(0.0   , 0.0   ); glColor4fv(clr_w);	glVertex3f(  0.0, 0.0, z);
-	glEnd();
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(1.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f(  w+a, -h-a, 0.0);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f(  w+a, -h  , 0.0);
-		glTexCoord2f(1.0-as, 1.0   ); glColor4fv(clr_c);	glVertex3f(  w  , -h-a, 0.0);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f(  w  , -h  , 0.0);
-		glTexCoord2f(0.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f(  0.0, -h-a, 0.0);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0, -h  , 0.0);
-	glEnd();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex(  w+a,  -h, 0.0);
+		renderer_set_texcoord(1.0   , 0.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  w+a, 0.0, z);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  w  ,  -h, 0.0);
+		renderer_set_texcoord(1.0-as, 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex(  w  , 0.0, z);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0,  -h, 0.0);
+		renderer_set_texcoord(0.0   , 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex(  0.0, 0.0, z);
+	renderer_end();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(1.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  w+a, -h-a, 0.0);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex(  w+a, -h  , 0.0);
+		renderer_set_texcoord(1.0-as, 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  w  , -h-a, 0.0);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  w  , -h  , 0.0);
+		renderer_set_texcoord(0.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  0.0, -h-a, 0.0);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0, -h  , 0.0);
+	renderer_end();
 	//bottom left
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0,  -h, 0.0);
-		glTexCoord2f(0.0   , 0.0   ); glColor4fv(clr_w);	glVertex3f(  0.0, 0.0, z);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f( -w  ,  -h, 0.0);
-		glTexCoord2f(1.0-as, 0.0   ); glColor4fv(clr_w);	glVertex3f( -w  , 0.0, z);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f( -w-a,  -h, 0.0);
-		glTexCoord2f(1.0   , 0.0   ); glColor4fv(clr_c);	glVertex3f( -w-a, 0.0, z);
-	glEnd();
-	glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f(  0.0, -h-a, 0.0);
-		glTexCoord2f(0.0   , 1.0-at); glColor4fv(clr_w);	glVertex3f(  0.0, -h  , 0.0);
-		glTexCoord2f(1.0-as, 1.0   ); glColor4fv(clr_c);	glVertex3f( -w  , -h-a, 0.0);
-		glTexCoord2f(1.0-as, 1.0-at); glColor4fv(clr_w);	glVertex3f( -w  , -h  , 0.0);
-		glTexCoord2f(1.0   , 1.0   ); glColor4fv(clr_c);	glVertex3f( -w-a, -h-a, 0.0);
-		glTexCoord2f(1.0   , 1.0-at); glColor4fv(clr_c);	glVertex3f( -w-a, -h  , 0.0);
-	glEnd();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0,  -h, 0.0);
+		renderer_set_texcoord(0.0   , 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex(  0.0, 0.0, z);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex( -w  ,  -h, 0.0);
+		renderer_set_texcoord(1.0-as, 0.0   ); renderer_set_color_v(clr_w);	renderer_vertex( -w  , 0.0, z);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex( -w-a,  -h, 0.0);
+		renderer_set_texcoord(1.0   , 0.0   ); renderer_set_color_v(clr_c);	renderer_vertex( -w-a, 0.0, z);
+	renderer_end();
+	renderer_begin(DRAW_TRIANGLE_STRIP);
+		renderer_set_texcoord(0.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex(  0.0, -h-a, 0.0);
+		renderer_set_texcoord(0.0   , 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex(  0.0, -h  , 0.0);
+		renderer_set_texcoord(1.0-as, 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex( -w  , -h-a, 0.0);
+		renderer_set_texcoord(1.0-as, 1.0-at); renderer_set_color_v(clr_w);	renderer_vertex( -w  , -h  , 0.0);
+		renderer_set_texcoord(1.0   , 1.0   ); renderer_set_color_v(clr_c);	renderer_vertex( -w-a, -h-a, 0.0);
+		renderer_set_texcoord(1.0   , 1.0-at); renderer_set_color_v(clr_c);	renderer_vertex( -w-a, -h  , 0.0);
+	renderer_end();
 
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	renderer_pop_matrix();
+	renderer_matrix_mode(MATRIX_MODELVIEW);
 
 }
 
@@ -672,24 +655,24 @@ void MenuGL::drawTitle()
 	static float ta0  = -60.0;
 	static float ta1  = -90.0;
 	float &tilt = titleTilt;
-	if(ta0 < 90.0)	ta0 += 0.7;
-	else if(!thickText) ta0 += 180.0;
-	else ta0 += 5.0;
+	if(ta0 < 90.0)	ta0 += 0.7*game->speedAdj;
+	else if(!thickText) ta0 += 180.0*game->speedAdj;
+	else ta0 += 5.0*game->speedAdj;
 	if(ta0 > 270.0)	ta0 = ta0-360.0;
 
-	if(ta1 < 90.0)	ta1 += 0.55;
-	else if(!thickText) ta1 += 180.0;
-	else ta1 += 8.0;
+	if(ta1 < 90.0)	ta1 += 0.55*game->speedAdj;
+	else if(!thickText) ta1 += 180.0*game->speedAdj;
+	else ta1 += 8.0*game->speedAdj;
 	if(ta1 > 270.0)	ta1 = ta1-360.0;
 
 	if(thickText)
 	{
-		tiltCount--;
+		tiltCount -= game->speedAdj;
 		if(tiltCount == 0)
 			tilt = 360.0+tilt;
 		else if(tiltCount < 0)
 		{
-			tilt -= 1.0;
+			tilt -= 1.0*game->speedAdj;
 			if(tilt < -10.0)
 			{
 				tiltCount = 1500;
@@ -697,33 +680,33 @@ void MenuGL::drawTitle()
 			}
 		}
 		else
-			tilt -= 0.01;
+			tilt -= 0.01*game->speedAdj;
 	}
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1.0, 1.0, 1.0, 1.0);
-	glPushMatrix();
-		glEnable(GL_TEXTURE_GEN_S);
-		glEnable(GL_TEXTURE_GEN_T);
-		glBindTexture(GL_TEXTURE_2D, envTex);
-		glPushMatrix();
-			glTranslatef(0.0,  1.0, 0.0);
-			glRotatef( tilt, 1.0, 0.0, 0.0);
-			glRotatef(   ta0, 0.0, 1.0, 0.0);
-			glCallList(listChrom);
-		glPopMatrix();
-		glPushMatrix();
-			glTranslatef(0.0, -1.0, 0.0);
-			glRotatef( tilt, 1.0, 0.0, 0.0);
-			glRotatef(   ta1, 0.0, 1.0, 0.0);
-			glCallList(listBSU);
-		glPopMatrix();
-		glDisable(GL_TEXTURE_GEN_S);
-		glDisable(GL_TEXTURE_GEN_T);
-	glPopMatrix();
-	glDisable(GL_DEPTH_TEST);
+	renderer_enable(GL_DEPTH_TEST);
+	renderer_set_depth_func(GL_LEQUAL);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_set_color(1.0, 1.0, 1.0, 1.0);
+	renderer_push_matrix();
+		renderer_enable(GL_TEXTURE_GEN_S);
+		renderer_enable(GL_TEXTURE_GEN_T);
+		renderer_bind_texture( envTex);
+		renderer_push_matrix();
+			renderer_translate(0.0,  1.0, 0.0);
+			renderer_rotate( tilt, 1.0, 0.0, 0.0);
+			renderer_rotate(   ta0, 0.0, 1.0, 0.0);
+			textGeometryChromium(thickText);
+		renderer_pop_matrix();
+		renderer_push_matrix();
+			renderer_translate(0.0, -1.0, 0.0);
+			renderer_rotate( tilt, 1.0, 0.0, 0.0);
+			renderer_rotate(   ta1, 0.0, 1.0, 0.0);
+			textGeometryBSU(thickText);
+		renderer_pop_matrix();
+		renderer_disable(GL_TEXTURE_GEN_S);
+		renderer_disable(GL_TEXTURE_GEN_T);
+	renderer_pop_matrix();
+	renderer_disable(GL_DEPTH_TEST);
 }
 
 //----------------------------------------------------------

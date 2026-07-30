@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -56,14 +57,14 @@ GroundSeaSegment::~GroundSeaSegment()
 //----------------------------------------------------------
 void GroundSeaSegment::drawGL()
 {
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-		glBindTexture(GL_TEXTURE_2D, parent->tex[Ground::Base]);
-		glBegin(GL_TRIANGLE_STRIP);
-			glTexCoord2f( 1.0, 0.0); glVertex3fv(vert[0]);
-			glTexCoord2f( 0.0, 0.0); glVertex3fv(vert[1]);
-			glTexCoord2f( 1.0, 1.0); glVertex3fv(vert[2]);
-			glTexCoord2f( 0.0, 1.0); glVertex3fv(vert[3]);
-		glEnd();
-	glPopMatrix();
+	renderer_push_matrix();
+	renderer_translate(pos[0], pos[1], pos[2]);
+		renderer_bind_texture( parent->tex[Ground::Base]);
+		renderer_begin(DRAW_TRIANGLE_STRIP);
+			renderer_set_texcoord( 1.0, 0.0); renderer_vertex_v(vert[0]);
+			renderer_set_texcoord( 0.0, 0.0); renderer_vertex_v(vert[1]);
+			renderer_set_texcoord( 1.0, 1.0); renderer_vertex_v(vert[2]);
+			renderer_set_texcoord( 0.0, 1.0); renderer_vertex_v(vert[3]);
+		renderer_end();
+	renderer_pop_matrix();
 }

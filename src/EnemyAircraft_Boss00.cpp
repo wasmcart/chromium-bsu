@@ -62,7 +62,7 @@ void EnemyAircraft_Boss00::update()
 	float	a = hpos[0]-pos[0];
 	float	b = hpos[1]-pos[1];
 	float	dist;
-	float	ammoSpeed = 0.35*game->speedAdj;
+	float	ammoSpeed = 0.35;
 
 	//-- update age
 	age += game->speedAdj;
@@ -77,37 +77,37 @@ void EnemyAircraft_Boss00::update()
 
 	float	p[3] = { pos[0], pos[1], pos[2] };
 
-	if(fabs(a) < 1.6) //-- big center gun
+	if(fabs(a) < 1.6 && ageInterval(1)) //-- big center gun
 	{
 		v[1] = -0.6;
 		p[1] = pos[1]-1.7;
 		game->enemyAmmo->addAmmo(3, p, v);
 	}
-	if(!((int)age%5)) //-- side cannons
+	if(ageInterval(5)) //-- side cannons
 	{
 		shootSwap++;
-		shootSwap %= 15;
-		if(shootSwap < 6)
+		if((int)shootSwap >= 15) shootSwap = 0;
+		if((int)shootSwap < 6)
 		{
 			v[1] = -0.2;
 			p[1] = pos[1]-1.9;
-			p[0] = pos[0]+2.0+((shootSwap%3)*0.4);
+			p[0] = pos[0]+2.0+(((int)shootSwap%3)*0.4);
 			game->enemyAmmo->addAmmo(0, p, v);
-			p[0] = pos[0]-2.0-((shootSwap%3)*0.4);
+			p[0] = pos[0]-2.0-(((int)shootSwap%3)*0.4);
 			game->enemyAmmo->addAmmo(0, p, v);
 		}
 	}
-	if(!(((int)age-1)%7))
+	if(ageInterval(7))
 	{
 		dist = fabs(a) + fabs(b);
 		shootVec[0] = ammoSpeed*a/dist;
 		shootVec[1] = ammoSpeed*b/dist;
 	}
-	if(!(((int)age/200)%2)) //-- omni shooters
+	if(!(((int)age/200)%2)) //-- omni shooters (phase checks, not intervals)
 	{
 		if(!(((int)age/100)%2))
 		{
-			if(!(((int)age/50)%2))
+			if(!(((int)age/50)%2) && ageInterval(1))
 			{
 				p[1] = pos[1]-0.45;
 				p[0] = pos[0]-1.1;
@@ -117,7 +117,7 @@ void EnemyAircraft_Boss00::update()
 			}
 			preFire = ((int)age%100)/100.0f;
 		}
-		else if(!((int)age%10))
+		else if(ageInterval(10))
 		{
 			p[1] = pos[1]-0.45;
 			b = hpos[1]-p[1];
@@ -158,13 +158,13 @@ void EnemyAircraft_Boss00::move()
 	float	approachDist;
 
 	approachDist = 7.0*(2.0-game->gameSkill);
-	if(fabs(diff[1]) < (approachDist+0.0*sin(game->frame*0.05)) )
+	if(fabs(diff[1]) < (approachDist+0.0*sin(game->gameTime*2.5f)) )
 	{
 		diff[1] = diff[1] * diff[1]/approachDist;
 	}
 	diff[0] += 5.0*sin(age*0.1);
-	lastMoveX = (0.98*lastMoveX)+(0.0005*game->gameSkill*diff[0]);
-	lastMoveY = (0.90*lastMoveY)+(0.001*game->gameSkill*diff[1]);
+	lastMoveX = (powf(0.98f,game->speedAdj)*lastMoveX)+(0.0005*game->speedAdj*game->gameSkill*diff[0]);
+	lastMoveY = (powf(0.90f,game->speedAdj)*lastMoveY)+(0.001*game->speedAdj*game->gameSkill*diff[1]);
 	pos[0] += game->speedAdj*(lastMoveX);
 	pos[1] += game->speedAdj*(lastMoveY+vel[1]);
 

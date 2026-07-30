@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -188,7 +189,7 @@ void	Explosions::deleteTextures()
 {
 	for(int i = 0; i < (int)NumExploTypes; i++)
 	{
-		glDeleteTextures(1, &tex[i]);
+		renderer_delete_textures(1, &tex[i]);
 		tex[i] = 0;
 	}
 }
@@ -378,11 +379,11 @@ void	Explosions::drawExplo(ExploType type)
 	float	xoff,yoff;
 	Explo	*thisExplo;
 
-	glColor4f(1.0, 1.0, 1.0, 1.0);
+	renderer_set_color(1.0, 1.0, 1.0, 1.0);
 
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
-	glBegin(GL_QUADS);
+	renderer_begin(DRAW_QUADS);
 	while(thisExplo)
 	{
 		age = thisExplo->age;
@@ -398,7 +399,7 @@ void	Explosions::drawExplo(ExploType type)
 			tmp = clr*clr;
 			clr = 1.2-clr;
 			tmp = 0.5+clr*0.5;
-			glColor4f(tmp, tmp, tmp, clr);
+			renderer_set_color(tmp, tmp, tmp, clr);
 
 			if(type == HeroDamage)
 				p = game->hero->pos;
@@ -409,29 +410,29 @@ void	Explosions::drawExplo(ExploType type)
 			{
 				xoff = 0.1;
 				yoff = 0.3;
-				glTexCoord2f(0.0, 1.0); glVertex3f(p[0]-exs+xoff, p[1]+eys+yoff, p[2]);
-				glTexCoord2f(0.0, 0.0); glVertex3f(p[0]-exs+xoff, p[1]-eys+yoff, p[2]);
-				glTexCoord2f(1.0, 0.0); glVertex3f(p[0]+exs+xoff, p[1]-eys+yoff, p[2]);
-				glTexCoord2f(1.0, 1.0); glVertex3f(p[0]+exs+xoff, p[1]+eys+yoff, p[2]);
+				renderer_set_texcoord(0.0, 1.0); renderer_vertex(p[0]-exs+xoff, p[1]+eys+yoff, p[2]);
+				renderer_set_texcoord(0.0, 0.0); renderer_vertex(p[0]-exs+xoff, p[1]-eys+yoff, p[2]);
+				renderer_set_texcoord(1.0, 0.0); renderer_vertex(p[0]+exs+xoff, p[1]-eys+yoff, p[2]);
+				renderer_set_texcoord(1.0, 1.0); renderer_vertex(p[0]+exs+xoff, p[1]+eys+yoff, p[2]);
 
 				xoff = -0.2;
 				yoff = -0.4;
-				glTexCoord2f(0.0, 1.0); glVertex3f(p[0]-exs+xoff, p[1]+eys+yoff, p[2]);
-				glTexCoord2f(0.0, 0.0); glVertex3f(p[0]-exs+xoff, p[1]-eys+yoff, p[2]);
-				glTexCoord2f(1.0, 0.0); glVertex3f(p[0]+exs+xoff, p[1]-eys+yoff, p[2]);
-				glTexCoord2f(1.0, 1.0); glVertex3f(p[0]+exs+xoff, p[1]+eys+yoff, p[2]);
+				renderer_set_texcoord(0.0, 1.0); renderer_vertex(p[0]-exs+xoff, p[1]+eys+yoff, p[2]);
+				renderer_set_texcoord(0.0, 0.0); renderer_vertex(p[0]-exs+xoff, p[1]-eys+yoff, p[2]);
+				renderer_set_texcoord(1.0, 0.0); renderer_vertex(p[0]+exs+xoff, p[1]-eys+yoff, p[2]);
+				renderer_set_texcoord(1.0, 1.0); renderer_vertex(p[0]+exs+xoff, p[1]+eys+yoff, p[2]);
 			}
 			xoff =  0.0;
 			yoff = -0.3;
-			glTexCoord2f(0.0, 1.0); glVertex3f(p[0]-ex+xoff, p[1]+ey+yoff, p[2]);
-			glTexCoord2f(0.0, 0.0); glVertex3f(p[0]-ex+xoff, p[1]-ey+yoff, p[2]);
-			glTexCoord2f(1.0, 0.0); glVertex3f(p[0]+ex+xoff, p[1]-ey+yoff, p[2]);
-			glTexCoord2f(1.0, 1.0); glVertex3f(p[0]+ex+xoff, p[1]+ey+yoff, p[2]);
+			renderer_set_texcoord(0.0, 1.0); renderer_vertex(p[0]-ex+xoff, p[1]+ey+yoff, p[2]);
+			renderer_set_texcoord(0.0, 0.0); renderer_vertex(p[0]-ex+xoff, p[1]-ey+yoff, p[2]);
+			renderer_set_texcoord(1.0, 0.0); renderer_vertex(p[0]+ex+xoff, p[1]-ey+yoff, p[2]);
+			renderer_set_texcoord(1.0, 1.0); renderer_vertex(p[0]+ex+xoff, p[1]+ey+yoff, p[2]);
 		}
 
 		thisExplo = thisExplo->next; //ADVANCE
 	}
-	glEnd();
+	renderer_end();
 
 }
 
@@ -444,9 +445,9 @@ void	Explosions::drawAmmo(ExploType type)
 	float	*pos;
 	Explo	*thisExplo;
 
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
-	glBegin(GL_QUADS);
+	renderer_begin(DRAW_QUADS);
 	while(thisExplo)
 	{
 		age = thisExplo->age;
@@ -456,15 +457,15 @@ void	Explosions::drawAmmo(ExploType type)
 		//tmp = clr*clr*clr;
 		if( (clr = (1.2-clr)) > 1.0)
 			clr = 1.0;
-		glColor4f(1.0, 1.0, 1.0, clr);
+		renderer_set_color(1.0, 1.0, 1.0, clr);
 		pos = thisExplo->pos;
-		glTexCoord2f(0.0, 0.0); glVertex3f(pos[0]-ex, pos[1]+ey, pos[2]);
-		glTexCoord2f(0.0, 1.0); glVertex3f(pos[0]-ex, pos[1]-ey, pos[2]);
-		glTexCoord2f(1.0, 1.0); glVertex3f(pos[0]+ex, pos[1]-ey, pos[2]);
-		glTexCoord2f(1.0, 0.0); glVertex3f(pos[0]+ex, pos[1]+ey, pos[2]);
+		renderer_set_texcoord(0.0, 0.0); renderer_vertex(pos[0]-ex, pos[1]+ey, pos[2]);
+		renderer_set_texcoord(0.0, 1.0); renderer_vertex(pos[0]-ex, pos[1]-ey, pos[2]);
+		renderer_set_texcoord(1.0, 1.0); renderer_vertex(pos[0]+ex, pos[1]-ey, pos[2]);
+		renderer_set_texcoord(1.0, 0.0); renderer_vertex(pos[0]+ex, pos[1]+ey, pos[2]);
 		thisExplo = thisExplo->next; //ADVANCE
 	}
-	glEnd();
+	renderer_end();
 }
 
 //----------------------------------------------------------
@@ -476,7 +477,7 @@ void	Explosions::drawBurst(ExploType type)
 	float	*pos;
 	Explo	*thisExplo;
 
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
 	while(thisExplo)
 	{
@@ -486,25 +487,25 @@ void	Explosions::drawBurst(ExploType type)
 		ex = thisExplo->size*exploSize[type][0]*clr;
 		ey = thisExplo->size*exploSize[type][1]*clr;
 		clr = tmp*0.75;
-		glColor4f(clr+0.5, clr+0.2, clr+0.1, clr);
+		renderer_set_color(clr+0.5, clr+0.2, clr+0.1, clr);
 		pos = thisExplo->pos;
-		glPushMatrix();
-		glTranslatef(pos[0], pos[1], pos[2]);
-		glRotatef(IRAND, 0.0, 0.0, 1.0);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f( -ex,  ey, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f( -ex, -ey, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(  ex, -ey, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f(  ex,  ey, 0.0);
-		glEnd();
-		glRotatef(IRAND, 0.0, 0.0, 1.0);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f( -ex,  ey, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f( -ex, -ey, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(  ex, -ey, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f(  ex,  ey, 0.0);
-		glEnd();
-		glPopMatrix();
+		renderer_push_matrix();
+		renderer_translate(pos[0], pos[1], pos[2]);
+		renderer_rotate(IRAND, 0.0, 0.0, 1.0);
+		renderer_begin(DRAW_QUADS);
+		renderer_set_texcoord(0.0, 0.0); renderer_vertex( -ex,  ey, 0.0);
+		renderer_set_texcoord(0.0, 1.0); renderer_vertex( -ex, -ey, 0.0);
+		renderer_set_texcoord(1.0, 1.0); renderer_vertex(  ex, -ey, 0.0);
+		renderer_set_texcoord(1.0, 0.0); renderer_vertex(  ex,  ey, 0.0);
+		renderer_end();
+		renderer_rotate(IRAND, 0.0, 0.0, 1.0);
+		renderer_begin(DRAW_QUADS);
+		renderer_set_texcoord(0.0, 0.0); renderer_vertex( -ex,  ey, 0.0);
+		renderer_set_texcoord(0.0, 1.0); renderer_vertex( -ex, -ey, 0.0);
+		renderer_set_texcoord(1.0, 1.0); renderer_vertex(  ex, -ey, 0.0);
+		renderer_set_texcoord(1.0, 0.0); renderer_vertex(  ex,  ey, 0.0);
+		renderer_end();
+		renderer_pop_matrix();
 		thisExplo = thisExplo->next; //ADVANCE
 	}
 }
@@ -520,7 +521,7 @@ void	Explosions::drawShields(ExploType type)
 
 	if(!game->hero->isVisible())
 		return;
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
 	while(thisExplo)
 	{
@@ -530,18 +531,18 @@ void	Explosions::drawShields(ExploType type)
 		tmp = 0.5+(clr*0.5);
 		ex = exploSize[type][0]*tmp;
 		ey = exploSize[type][1]*tmp;
-		glColor4f(clr, clr, 1.0, clr*0.7);
+		renderer_set_color(clr, clr, 1.0, clr*0.7);
 		pos = game->hero->pos;
-		glPushMatrix();
-		glTranslatef(pos[0], pos[1], pos[2]);
-		glRotatef(IRAND, 0.0, 0.0, 1.0);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f( -ex,  ey, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f( -ex, -ey, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(  ex, -ey, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f(  ex,  ey, 0.0);
-		glEnd();
-		glPopMatrix();
+		renderer_push_matrix();
+		renderer_translate(pos[0], pos[1], pos[2]);
+		renderer_rotate(IRAND, 0.0, 0.0, 1.0);
+		renderer_begin(DRAW_QUADS);
+		renderer_set_texcoord(0.0, 0.0); renderer_vertex( -ex,  ey, 0.0);
+		renderer_set_texcoord(0.0, 1.0); renderer_vertex( -ex, -ey, 0.0);
+		renderer_set_texcoord(1.0, 1.0); renderer_vertex(  ex, -ey, 0.0);
+		renderer_set_texcoord(1.0, 0.0); renderer_vertex(  ex,  ey, 0.0);
+		renderer_end();
+		renderer_pop_matrix();
 		thisExplo = thisExplo->next; //ADVANCE
 	}
 }
@@ -556,9 +557,9 @@ void	Explosions::drawLife(ExploType type)
 	float	tmp;
 	Explo	*thisExplo;
 
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
-	glBegin(GL_QUADS);
+	renderer_begin(DRAW_QUADS);
 	while(thisExplo)
 	{
 		age = thisExplo->age;
@@ -586,16 +587,16 @@ void	Explosions::drawLife(ExploType type)
 			}
 			ex = thisExplo->size*exploSize[type][0]*tmp;
 			ey = thisExplo->size*exploSize[type][1]*tmp;
-			glColor4fv(clr);
-			glTexCoord2f(0.0, 1.0); glVertex3f(p[0]-ex, p[1]+ey, p[2]);
-			glTexCoord2f(0.0, 0.0); glVertex3f(p[0]-ex, p[1]-ey, p[2]);
-			glTexCoord2f(1.0, 0.0); glVertex3f(p[0]+ex, p[1]-ey, p[2]);
-			glTexCoord2f(1.0, 1.0); glVertex3f(p[0]+ex, p[1]+ey, p[2]);
+			renderer_set_color_v(clr);
+			renderer_set_texcoord(0.0, 1.0); renderer_vertex(p[0]-ex, p[1]+ey, p[2]);
+			renderer_set_texcoord(0.0, 0.0); renderer_vertex(p[0]-ex, p[1]-ey, p[2]);
+			renderer_set_texcoord(1.0, 0.0); renderer_vertex(p[0]+ex, p[1]-ey, p[2]);
+			renderer_set_texcoord(1.0, 1.0); renderer_vertex(p[0]+ex, p[1]+ey, p[2]);
 		}
 
 		thisExplo = thisExplo->next; //ADVANCE
 	}
-	glEnd();
+	renderer_end();
 
 }
 
@@ -610,7 +611,7 @@ void	Explosions::drawElectric(ExploType type)
 	Explo	*thisExplo;
 	float	tOff;
 
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
 	while(thisExplo)
 	{
@@ -621,7 +622,7 @@ void	Explosions::drawElectric(ExploType type)
 			alpha = 1.0-tmp;
 			alpha = 5.0*(alpha*alpha);
 			clr = thisExplo->clr;
-			glColor4f(clr[0], clr[1], clr[2], clr[3]*alpha);
+			renderer_set_color(clr[0], clr[1], clr[2], clr[3]*alpha);
 			ex = exploSize[type][0];
 			ey = exploSize[type][1]*tmp;
 			tmp = (1.0-game->speedAdj)+(game->speedAdj*1.075);
@@ -630,15 +631,15 @@ void	Explosions::drawElectric(ExploType type)
 			thisExplo->vel[2] *= tmp;
 			pos = thisExplo->pos;
 			tOff = FRAND;
-			glPushMatrix();
-				glTranslatef(pos[0], pos[1], pos[2]);
-				glBegin(GL_QUADS);
-				glTexCoord2f(0.0, 0.0+tOff); glVertex3f( -ex,  ey, 0.0);
-				glTexCoord2f(0.0, 0.2+tOff); glVertex3f( -ex, -ey, 0.0);
-				glTexCoord2f(1.0, 0.2+tOff); glVertex3f(  ex, -ey, 0.0);
-				glTexCoord2f(1.0, 0.0+tOff); glVertex3f(  ex,  ey, 0.0);
-				glEnd();
-			glPopMatrix();
+			renderer_push_matrix();
+				renderer_translate(pos[0], pos[1], pos[2]);
+				renderer_begin(DRAW_QUADS);
+				renderer_set_texcoord(0.0, 0.0+tOff); renderer_vertex( -ex,  ey, 0.0);
+				renderer_set_texcoord(0.0, 0.2+tOff); renderer_vertex( -ex, -ey, 0.0);
+				renderer_set_texcoord(1.0, 0.2+tOff); renderer_vertex(  ex, -ey, 0.0);
+				renderer_set_texcoord(1.0, 0.0+tOff); renderer_vertex(  ex,  ey, 0.0);
+				renderer_end();
+			renderer_pop_matrix();
 		}
 		thisExplo = thisExplo->next; //ADVANCE
 	}
@@ -654,7 +655,7 @@ void	Explosions::drawGlitter(ExploType type)
 	float	*pos;
 	Explo	*thisExplo;
 
-	glBindTexture(GL_TEXTURE_2D, tex[type]);
+	renderer_bind_texture( tex[type]);
 	thisExplo = exploRoot[type]->next;
 	while(thisExplo)
 	{
@@ -665,20 +666,20 @@ void	Explosions::drawGlitter(ExploType type)
 			alpha = 1.0-tmp;
 			//alpha = 5.0*(alpha*alpha);
 			clr = thisExplo->clr;
-			glColor4f(clr[0], clr[1], clr[2], clr[3]*alpha);
+			renderer_set_color(clr[0], clr[1], clr[2], clr[3]*alpha);
 			tmp = alpha*alpha;
 			ex = tmp*thisExplo->size*exploSize[type][0];
 			ey = tmp*thisExplo->size*exploSize[type][1]+(0.02*age);
 			pos = thisExplo->pos;
-			glPushMatrix();
-				glTranslatef(pos[0], pos[1], pos[2]);
-				glBegin(GL_QUADS);
-				glTexCoord2f(0.0, 0.0); glVertex3f( -ex,  ey, 0.0);
-				glTexCoord2f(0.0, 1.0); glVertex3f( -ex, -ey, 0.0);
-				glTexCoord2f(1.0, 1.0); glVertex3f(  ex, -ey, 0.0);
-				glTexCoord2f(1.0, 0.0); glVertex3f(  ex,  ey, 0.0);
-				glEnd();
-			glPopMatrix();
+			renderer_push_matrix();
+				renderer_translate(pos[0], pos[1], pos[2]);
+				renderer_begin(DRAW_QUADS);
+				renderer_set_texcoord(0.0, 0.0); renderer_vertex( -ex,  ey, 0.0);
+				renderer_set_texcoord(0.0, 1.0); renderer_vertex( -ex, -ey, 0.0);
+				renderer_set_texcoord(1.0, 1.0); renderer_vertex(  ex, -ey, 0.0);
+				renderer_set_texcoord(1.0, 0.0); renderer_vertex(  ex,  ey, 0.0);
+				renderer_end();
+			renderer_pop_matrix();
 
 		}
 		thisExplo = thisExplo->next; //ADVANCE

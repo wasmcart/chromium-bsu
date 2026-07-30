@@ -1,0 +1,53 @@
+name: Build wasmcart cart
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-wasc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '4.0.3'
+
+      - name: Build
+        run: |
+          chmod +x build.sh pack.sh
+          bash build.sh
+
+      - name: Pack
+        run: bash pack.sh
+
+      - name: Upload .wasc artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: chromium_bsu
+          path: build/chromium_bsu.wasc
+
+  release:
+    needs: build-wasc
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Chromium B.S.U. ${{ github.ref_name }}"
+          body: |
+            Chromium B.S.U. wasmcart cart (.wasc).
+
+            Runs on all wasmcart hosts: browser, Node.js, wasmcart-native, and RetroArch.
+            ES 3.0 renderer — no GL translation layers needed.
+          files: artifacts/chromium_bsu/*.wasc

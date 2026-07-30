@@ -59,7 +59,7 @@ public:
 
 	static float	fps;
 	static int		frame;
-	static int		gameFrame;
+	static float	gameTime;
 	static float	gameSpeed;
 	static float	gameSkill;
 	static int		gameLevel;

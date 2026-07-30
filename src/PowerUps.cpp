@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -123,9 +124,9 @@ void	PowerUps::deleteTextures()
 {
 	for(int i = 0; i < NumPowerUps; i++)
 	{
-		glDeleteTextures(1, &tex[i]);
+		renderer_delete_textures(1, &tex[i]);
 	}
-	glDeleteTextures(1, &pwrTex);
+	renderer_delete_textures(1, &pwrTex);
 }
 
 //----------------------------------------------------------
@@ -266,25 +267,25 @@ void PowerUps::drawGL()
 		sz	= pwrUpSize[pwrUp->type];
 		szp = sz[0]*2.5;
 
-		glColor4fv(pwrUpColor[pwrUp->type]);
-		glBindTexture(GL_TEXTURE_2D, pwrTex);
-		glPushMatrix();
-		glTranslatef(	pos[0]+wobble_0[(int)pwrUp->age%WOBBLE_0],
+		renderer_set_color_v(pwrUpColor[pwrUp->type]);
+		renderer_bind_texture( pwrTex);
+		renderer_push_matrix();
+		renderer_translate(	pos[0]+wobble_0[(int)pwrUp->age%WOBBLE_0],
 						pos[1]+wobble_1[(int)pwrUp->age%WOBBLE_1],
 						pos[2]);
-		glRotatef(IRAND, 0.0, 0.0, 1.0);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f(-szp,  szp, 0.0 );
-		glTexCoord2f(0.0, 1.0); glVertex3f(-szp, -szp, 0.0 );
-		glTexCoord2f(1.0, 1.0); glVertex3f( szp, -szp, 0.0 );
-		glTexCoord2f(1.0, 0.0); glVertex3f( szp,  szp, 0.0 );
-		glEnd();
-		glPopMatrix();
+		renderer_rotate(IRAND, 0.0, 0.0, 1.0);
+		renderer_begin(DRAW_QUADS);
+		renderer_set_texcoord(0.0, 0.0); renderer_vertex(-szp,  szp, 0.0 );
+		renderer_set_texcoord(0.0, 1.0); renderer_vertex(-szp, -szp, 0.0 );
+		renderer_set_texcoord(1.0, 1.0); renderer_vertex( szp, -szp, 0.0 );
+		renderer_set_texcoord(1.0, 0.0); renderer_vertex( szp,  szp, 0.0 );
+		renderer_end();
+		renderer_pop_matrix();
 
 		pwrUp = pwrUp->next; //ADVANCE
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	pwrUp = pwrUpRoot->next;
 	while(pwrUp)
@@ -292,24 +293,24 @@ void PowerUps::drawGL()
 		pos	= pwrUp->pos;
 		sz	= pwrUpSize[pwrUp->type];
 
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBindTexture(GL_TEXTURE_2D, tex[pwrUp->type]);
-		glPushMatrix();
-		glTranslatef(	pos[0]+wobble_0[(int)pwrUp->age%WOBBLE_0],
+		renderer_set_color(1.0, 1.0, 1.0, 1.0);
+		renderer_bind_texture( tex[pwrUp->type]);
+		renderer_push_matrix();
+		renderer_translate(	pos[0]+wobble_0[(int)pwrUp->age%WOBBLE_0],
 						pos[1]+wobble_1[(int)pwrUp->age%WOBBLE_1],
 						pos[2]);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f(-sz[0],  sz[1], 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f(-sz[0], -sz[1], 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f( sz[0], -sz[1], 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f( sz[0],  sz[1], 0.0);
-		glEnd();
-		glPopMatrix();
+		renderer_begin(DRAW_QUADS);
+		renderer_set_texcoord(0.0, 0.0); renderer_vertex(-sz[0],  sz[1], 0.0);
+		renderer_set_texcoord(0.0, 1.0); renderer_vertex(-sz[0], -sz[1], 0.0);
+		renderer_set_texcoord(1.0, 1.0); renderer_vertex( sz[0], -sz[1], 0.0);
+		renderer_set_texcoord(1.0, 0.0); renderer_vertex( sz[0],  sz[1], 0.0);
+		renderer_end();
+		renderer_pop_matrix();
 
 		pwrUp = pwrUp->next; //ADVANCE
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
 }
 
 

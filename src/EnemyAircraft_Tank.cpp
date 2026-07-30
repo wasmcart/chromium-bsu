@@ -48,7 +48,7 @@ void EnemyAircraft_Tank::init(float *p, float randFact)
 	size[0] = 1.9;
 	size[1] = 2.1;
 	collisionMove = 0.1;
-	vel[1] =  0.03;
+	vel[1] =  0.03*0.60f;
 
 }
 
@@ -63,7 +63,7 @@ void EnemyAircraft_Tank::update()
 	float	a = hpos[0]-pos[0];
 	float	b = hpos[1]-pos[1];
 	float	dist;
-	float	ammoSpeed = 0.35*game->speedAdj;
+	float	ammoSpeed = 0.35;
 
 	int		tmpInt;
 	//-- update age
@@ -82,16 +82,21 @@ void EnemyAircraft_Tank::update()
 	p[1] = pos[1] - 1.7;
 	if(fabs(a) < 4.0)
 	{
-		if(shootSwap == 0 || shootSwap == 8 || shootSwap == 16 )
 		{
-			v[1] = -0.2;
-			p[0] = pos[0] + 1.5;
-			game->enemyAmmo->addAmmo(0, p, v);
-			p[0] = pos[0] - 1.5;
-			game->enemyAmmo->addAmmo(0, p, v);
+			int sw = (int)shootSwap;
+			if(sw == 0 || sw == 8 || sw == 16 )
+			{
+				if(ageInterval(1)) {
+					v[1] = -0.2;
+					p[0] = pos[0] + 1.5;
+					game->enemyAmmo->addAmmo(0, p, v);
+					p[0] = pos[0] - 1.5;
+					game->enemyAmmo->addAmmo(0, p, v);
+				}
+			}
 		}
-		shootSwap++;
-		shootSwap %= 100;
+		shootSwap += game->speedAdj;
+		if((int)shootSwap >= 100) shootSwap = 0;
 	}
 
 	if(!((tmpInt = (int)age/200)%2)) //-- omni shooters
@@ -103,7 +108,7 @@ void EnemyAircraft_Tank::update()
 		}
 		else if(tmpInt < 170)
 		{
-			if(!((int)age%10))
+			if(ageInterval(10))
 			{
 				p[1] = pos[1]-0.45;
 				b = hpos[1]-p[1];
@@ -148,17 +153,22 @@ void EnemyAircraft_Tank::move()
 	{
 		v1 = 0.04*(fabs(diff[0])/8.0);
 	}
-	vel[1] = 0.99*vel[1] + 0.01*v1;
+	{
+		float d = game->speedAdj;
+		float decay99 = powf(0.99f, d);
+		vel[1] = decay99*vel[1] + (1.0f-decay99)*v1;
 
-	if(pos[1] < -3.0)
-		vel[1] = -0.1;
-	else if(pos[1] < 0.0)
-		vel[1] *= 0.99;
+		if(pos[1] < -3.0)
+			vel[1] = -0.1;
+		else if(pos[1] < 0.0)
+			vel[1] *= decay99;
 
-	if(pos[0] < 0.0)
-		pos[0] = game->speedAdj*(0.998*pos[0] + 0.002*(-config->screenBoundX()+2.85));
-	else
-		pos[0] = game->speedAdj*(0.998*pos[0] + 0.002*( config->screenBoundX()-2.85));
+		float decay998 = powf(0.998f, d);
+		if(pos[0] < 0.0)
+			pos[0] = decay998*pos[0] + (1.0f-decay998)*(-config->screenBoundX()+2.85);
+		else
+			pos[0] = decay998*pos[0] + (1.0f-decay998)*( config->screenBoundX()-2.85);
+	}
 	switch(((int)age/50)%8)
 	{
 		case 2:

@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -98,7 +99,7 @@ void HeroAmmo::deleteTextures()
 {
 	for(int i = 0; i < NUM_HERO_AMMO_TYPES; i++)
 	{
-		glDeleteTextures(1, &ammoTex[i]);
+		renderer_delete_textures(1, &ammoTex[i]);
 		ammoTex[i] = 0;
 	}
 }
@@ -156,9 +157,9 @@ void HeroAmmo::addAmmo(int type, float pos[3])
 
 	switch(type)
 	{
-		case 0:	vel[1] = 0.5*game->speedAdj;	break;
-		case 1:	vel[1] = 0.2*game->speedAdj;	break;
-		case 2:	vel[1] = 0.3*game->speedAdj;	break;
+		case 0:	vel[1] = 0.5;	break;
+		case 1:	vel[1] = 0.2;	break;
+		case 2:	vel[1] = 0.3;	break;
 		default:	break;
 	}
 	if(type >= 0 && type < NUM_HERO_AMMO_TYPES)
@@ -304,20 +305,20 @@ void HeroAmmo::drawGL()
 
 	for(i = 0; i < NUM_HERO_AMMO_TYPES; i++)
 	{
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBindTexture(GL_TEXTURE_2D, ammoTex[i]);
+		renderer_set_color(1.0, 1.0, 1.0, 1.0);
+		renderer_bind_texture( ammoTex[i]);
 		thisAmmo = ammoRoot[i]->next;
-		glBegin(GL_QUADS);
+		renderer_begin(DRAW_QUADS);
 		while(thisAmmo)
 		{
 			pos = thisAmmo->pos;
-			glTexCoord2f(0.0, 0.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1],     pos[2]);
-			glTexCoord2f(0.0, 1.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-			glTexCoord2f(1.0, 1.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-			glTexCoord2f(1.0, 0.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1],     pos[2]);
+			renderer_set_texcoord(0.0, 0.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1],     pos[2]);
+			renderer_set_texcoord(0.0, 1.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+			renderer_set_texcoord(1.0, 1.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+			renderer_set_texcoord(1.0, 0.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1],     pos[2]);
 			thisAmmo = thisAmmo->next; //ADVANCE
 		}
-		glEnd();
+		renderer_end();
 	}
 }
 

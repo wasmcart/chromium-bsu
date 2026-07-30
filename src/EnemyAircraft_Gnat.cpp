@@ -50,7 +50,7 @@ void EnemyAircraft_Gnat::init(float *p, float randFact)
 	collisionMove = 0.0;
 	randMoveX = 0.5+0.5*randMoveX;
 	vel[0] = 0.2;
-	vel[1] = 0.1;
+	vel[1] = 0.1*0.60f;
 
 }
 
@@ -133,7 +133,7 @@ void EnemyAircraft_Gnat::move()
 		tmpY = y;
 		x = tmpd*tmpX + -(1.0-tmpd)*diff[1]/tmpd;
 		y = tmpd*tmpY +  (1.0-tmpd)*diff[0]/tmpd;
-		y += 0.01*sin(game->gameFrame*0.001);
+		y += 0.01*sin(game->gameTime*0.05f);
 	}
 	else
 	{
@@ -153,11 +153,14 @@ void EnemyAircraft_Gnat::move()
 	}
 
 	tmp = randX*0.2;
-	if( ((int)age/8)%2 )
-		v0 = vel[0]*(0.85-tmp) + (0.2+tmp)*(randX-0.2)*x;
-	else
-		v0 = vel[0];
-	v1 = vel[1]*(0.85-tmp) + (0.2+tmp)*(randX-0.2)*y;
+	{
+		float blend = 1.0f - powf(0.85f-tmp, game->speedAdj);
+		if( ((int)age/8)%2 )
+			v0 = vel[0] + blend*((randX-0.2)*x - vel[0]);
+		else
+			v0 = vel[0];
+		v1 = vel[1] + blend*((randX-0.2)*y - vel[1]);
+	}
 
 	if(age < 50)
 	{

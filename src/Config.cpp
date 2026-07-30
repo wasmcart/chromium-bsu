@@ -91,7 +91,9 @@ Config::Config()
 	m_audioType		= AudioOpenAL;
 	m_textType		= TextGLC;
 
+#ifndef WASM_CART
 	readFile();
+#endif
 }
 
 /**
@@ -99,7 +101,9 @@ Config::Config()
  */
 Config::~Config()
 {
+#ifndef WASM_CART
 	saveFile();
+#endif
 }
 
 /**
@@ -361,6 +365,13 @@ void Config::setScreenSize(int m)
 			m_screenH = 480;
 			break;
 	}
+	m_screenA = (float)m_screenW/(float)m_screenH;
+}
+
+void Config::setScreenSize(int w, int h)
+{
+	m_screenW = w;
+	m_screenH = h;
 	m_screenA = (float)m_screenW/(float)m_screenH;
 }
 

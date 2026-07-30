@@ -50,7 +50,7 @@ void EnemyAircraft_Straight::init(float *p, float randFact)
 	size[0] = 0.75;
 	size[1] = 1.02;
 	collisionMove = 0.5;
-	vel[1] = -0.046-frand*0.04;
+	vel[1] = (-0.046-frand*0.04)*0.60f;
 }
 
 //-- NOTE: Many of the firing rates are not adjusted by game->speedAdj

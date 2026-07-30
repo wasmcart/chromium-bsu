@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -25,7 +26,7 @@ bool	Global::mouseActive		= false;
 
 float	Global::fps			= 50.0;
 int		Global::frame		= 0;
-int		Global::gameFrame	= 0;
+float		Global::gameTime	= 0;
 float	Global::gameSpeed	= 0.5;
 float	Global::gameSkill	= 1.0;
 int		Global::gameLevel	= 1;
@@ -35,7 +36,7 @@ Global::GameMode Global::gameMode = Menu;
 float	Global::heroDeath	= 0;
 float	Global::heroSuccess	= 0;
 
-float	Global::scrollSpeed		= -0.045;
+float	Global::scrollSpeed		= -0.034;
 
 HeroAircraft	*Global::hero		= 0;
 EnemyFleet		*Global::enemyFleet	= 0;
@@ -79,11 +80,15 @@ int Global::tipSuperShield	= 0;
 
 #include "GroundMetal.h"
 
+#ifdef WASM_CART
+#include "AudioWasmcart.h"
+#else
 #if defined(AUDIO_OPENAL)
 #include "AudioOpenAL.h"
 #endif
 #if defined(AUDIO_SDLMIXER)
 #include "AudioSDLMixer.h"
+#endif
 #endif
 
 Global	*Global::instance = 0;
@@ -143,7 +148,7 @@ void Global::newGame()
 	HiScore::getInstance()->set(config->intSkill(), hero->getScore());
 	gameSkill = config->gameSkillBase() + 0.5;
 	gameSkill += (gameLevel-1)*0.05;
-	gameFrame = 0;
+	gameTime = 0.0f;
 	enemyFleet->clear();
 	powerUps->clear();
 	enemyAmmo->clear();
@@ -186,7 +191,7 @@ void Global::gotoNextLevel()
 	gameSkill += 0.05;
 	if(gameSkill > 1.9)
 		gameSkill = 1.9;
-	gameFrame = 0;
+	gameTime = 0.0f;
 	enemyFleet->clear();
 	powerUps->clear();
 	enemyAmmo->clear();
@@ -221,7 +226,9 @@ void Global::createGame()
 	menu		= new MenuGL();
 	itemAdd		= new ScreenItemAdd();
 
-#if defined(AUDIO_OPENAL) && defined(AUDIO_SDLMIXER)
+#ifdef WASM_CART
+	audio = new AudioWasmcart();
+#elif defined(AUDIO_OPENAL) && defined(AUDIO_SDLMIXER)
 	if(config->audioType() == Config::AudioOpenAL)
 		audio = new AudioOpenAL();
 	else
@@ -268,7 +275,7 @@ void Global::deleteTextures()
 	Config *config = Config::instance();
 	if( config->debug() ) fprintf(stderr, _("deleteTextures()\n"));
 //	return;
-	glFinish();
+	renderer_finish();
 	mainGL->deleteTextures();
 	enemyAmmo->deleteTextures();
 	enemyFleet->deleteTextures();
@@ -279,7 +286,7 @@ void Global::deleteTextures()
 	menu->deleteTextures();
 	powerUps->deleteTextures();
 	statusDisplay->deleteTextures();
-	glFinish();
+	renderer_finish();
 }
 
 //----------------------------------------------------------
@@ -288,7 +295,7 @@ void Global::loadTextures()
 	Config *config = Config::instance();
 	if( config->debug() ) fprintf(stderr, _("Global::loadTextures()\n"));
 //	return;
-	glFinish();
+	renderer_finish();
 	mainGL->loadTextures();
 	enemyAmmo->loadTextures();
 	enemyFleet->loadTextures();
@@ -299,7 +306,7 @@ void Global::loadTextures()
 	menu->loadTextures();
 	powerUps->loadTextures();
 	statusDisplay->loadTextures();
-	glFinish();
+	renderer_finish();
 }
 
 //====================================================================

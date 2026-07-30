@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -83,15 +84,15 @@ void GroundMetal::loadTextures()
 			break;
 	}
 	if(config->texBorder())
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, tbc);
+		renderer_tex_parameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, tbc);
 	tex[Blip] = Image::load(dataLoc("png/gndMetalBlip.png"), IMG_NOMIPMAPS, IMG_ALPHA, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 }
 
 //----------------------------------------------------------
 void GroundMetal::deleteTextures()
 {
-	glDeleteTextures(1, &tex[Base]);
-	glDeleteTextures(1, &tex[Blip]);
+	renderer_delete_textures(1, &tex[Base]);
+	renderer_delete_textures(1, &tex[Blip]);
 	tex[Base] = 0;
 	tex[Blip] = 0;
 }
@@ -112,10 +113,10 @@ void GroundMetal::drawGL()
 	float	s2 = size * 2.0;
 
 	//-- Set background color for low and med gfx
-	float	pulse = sin(game->gameFrame*0.03);
+	float	pulse = sin(game->gameTime*1.5f);
 	if(pulse < 0.0)
 		pulse = 0.0;
-	glClearColor( 0.2+pulse, 0.2, 0.25, 1.0 );
+	renderer_set_clear_color( 0.2+pulse, 0.2, 0.25, 1.0 );
 
 	//-- draw ground segments
 	if( !game->game_pause || game->gameMode == Global::Menu)

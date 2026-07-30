@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -124,12 +125,12 @@ private:
 
 	inline void drawQuad(float szx, float szy)
 	{
-		glBegin(GL_TRIANGLE_STRIP);
-			glTexCoord2f(1.0, 0.0); glVertex3f( szx,  szy, 0.0);
-			glTexCoord2f(0.0, 0.0); glVertex3f(-szx,  szy, 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f( szx, -szy, 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f(-szx, -szy, 0.0);
-		glEnd();
+		renderer_begin(DRAW_TRIANGLE_STRIP);
+			renderer_set_texcoord(1.0, 0.0); renderer_vertex( szx,  szy, 0.0);
+			renderer_set_texcoord(0.0, 0.0); renderer_vertex(-szx,  szy, 0.0);
+			renderer_set_texcoord(1.0, 1.0); renderer_vertex( szx, -szy, 0.0);
+			renderer_set_texcoord(0.0, 1.0); renderer_vertex(-szx, -szy, 0.0);
+		renderer_end();
 	}
 
 	//-- tip variables

@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -77,9 +78,9 @@ void	EnemyFleet::deleteTextures()
 {
 	for(int i = 0; i < NumEnemyTypes; i++)
 	{
-		glDeleteTextures(1, &shipTex[i]);
+		renderer_delete_textures(1, &shipTex[i]);
 		shipTex[i] = 0;
-		glDeleteTextures(1, &extraTex[i]);
+		renderer_delete_textures(1, &extraTex[i]);
 		extraTex[i] = 0;
 	}
 }
@@ -108,7 +109,7 @@ void	EnemyFleet::drawGL()
 	float *p;
 	EnemyAircraft	*thisEnemy;
 
-	glColor4f(1.0, 1.0, 1.0, 1.0);
+	renderer_set_color(1.0, 1.0, 1.0, 1.0);
 
 	thisEnemy = squadRoot->next;
 	int num = 0;
@@ -118,35 +119,35 @@ void	EnemyFleet::drawGL()
 		p = thisEnemy->pos;
 		szx = thisEnemy->size[0];
 		szy = thisEnemy->size[1];
-		glBindTexture(GL_TEXTURE_2D, shipTex[(int)thisEnemy->type]);
-		glColor4f(1.0, 1.0, 1.0, 1.0);
+		renderer_bind_texture( shipTex[(int)thisEnemy->type]);
+		renderer_set_color(1.0, 1.0, 1.0, 1.0);
 
-		glPushMatrix();
-		glTranslatef( p[0],  p[1],  p[2] );
-		glBegin(GL_TRIANGLE_STRIP);
-			glTexCoord2f(1.0, 0.0); glVertex3f( szx,  szy, 0.0);
-			glTexCoord2f(0.0, 0.0); glVertex3f(-szx,  szy, 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f( szx, -szy, 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f(-szx, -szy, 0.0);
-		glEnd();
-		glPopMatrix();
+		renderer_push_matrix();
+		renderer_translate( p[0],  p[1],  p[2] );
+		renderer_begin(DRAW_TRIANGLE_STRIP);
+			renderer_set_texcoord(1.0, 0.0); renderer_vertex( szx,  szy, 0.0);
+			renderer_set_texcoord(0.0, 0.0); renderer_vertex(-szx,  szy, 0.0);
+			renderer_set_texcoord(1.0, 1.0); renderer_vertex( szx, -szy, 0.0);
+			renderer_set_texcoord(0.0, 1.0); renderer_vertex(-szx, -szy, 0.0);
+		renderer_end();
+		renderer_pop_matrix();
 
 		switch(thisEnemy->type)
 		{
 			case EnemyStraight:
 				if(thisEnemy->preFire)
 				{
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					glBindTexture(GL_TEXTURE_2D, extraTex[EnemyStraight]);
-					glColor4f(1.0, 1.0, 1.0, thisEnemy->preFire);
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+					renderer_bind_texture( extraTex[EnemyStraight]);
+					renderer_set_color(1.0, 1.0, 1.0, thisEnemy->preFire);
 					szx = 0.55*thisEnemy->preFire;
-					glPushMatrix();
-					glTranslatef(p[0], p[1]-0.9, p[2]);
-					glRotatef(IRAND, 0.0, 0.0, 1.0);
+					renderer_push_matrix();
+					renderer_translate(p[0], p[1]-0.9, p[2]);
+					renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 					drawQuad(szx,szx+0.1);
-					glPopMatrix();
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					glColor4f(1.0, 1.0, 1.0, 1.0);
+					renderer_pop_matrix();
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					renderer_set_color(1.0, 1.0, 1.0, 1.0);
 				}
 			 	if(!(((int)thisEnemy->age-192)%256))
 				{
@@ -154,79 +155,79 @@ void	EnemyFleet::drawGL()
 				}
 				break;
 			case EnemyOmni:
-				glColor4f(1.0, 0.0, 0.0, 1.0);
-				glBindTexture(GL_TEXTURE_2D, extraTex[EnemyOmni]);
-				glPushMatrix();
-				glTranslatef(p[0], p[1], p[2]);
-				glRotatef(-(thisEnemy->age*8), 0.0, 0.0, 1.0);
+				renderer_set_color(1.0, 0.0, 0.0, 1.0);
+				renderer_bind_texture( extraTex[EnemyOmni]);
+				renderer_push_matrix();
+				renderer_translate(p[0], p[1], p[2]);
+				renderer_rotate(-(thisEnemy->age*8), 0.0, 0.0, 1.0);
 				drawQuad(szx,szy);
-				glPopMatrix();
-				glColor4f(1.0, 1.0, 1.0, 1.0);
+				renderer_pop_matrix();
+				renderer_set_color(1.0, 1.0, 1.0, 1.0);
 				break;
 			case EnemyTank:
 				if(thisEnemy->preFire)
 				{
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					glBindTexture(GL_TEXTURE_2D, extraTex[EnemyTank]);
-					glColor4f(1.0, 1.0, 1.0, thisEnemy->preFire);
-					glPushMatrix();
-					glTranslatef(p[0], p[1]-0.63, p[2]);//NOTE: offset is ~szy*0.3
-					glRotatef(IRAND, 0.0, 0.0, 1.0);
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+					renderer_bind_texture( extraTex[EnemyTank]);
+					renderer_set_color(1.0, 1.0, 1.0, thisEnemy->preFire);
+					renderer_push_matrix();
+					renderer_translate(p[0], p[1]-0.63, p[2]);//NOTE: offset is ~szy*0.3
+					renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 					szx = 0.4+0.6*thisEnemy->preFire;
 					drawQuad(szx,szx);
-					glPopMatrix();
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					glColor4f(1.0, 1.0, 1.0, 1.0);
+					renderer_pop_matrix();
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					renderer_set_color(1.0, 1.0, 1.0, 1.0);
 				}
 				break;
 			case EnemyBoss00:
 				if(thisEnemy->preFire)
 				{
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					glBindTexture(GL_TEXTURE_2D, extraTex[EnemyBoss00]);
-					glColor4f(1.0, 1.0, 1.0, thisEnemy->preFire);
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+					renderer_bind_texture( extraTex[EnemyBoss00]);
+					renderer_set_color(1.0, 1.0, 1.0, thisEnemy->preFire);
 					szx = 0.4+0.6*thisEnemy->preFire;
-					glPushMatrix();
-					glTranslatef(p[0]+1.1, p[1]-0.4, p[2]);
-					glRotatef(IRAND, 0.0, 0.0, 1.0);
+					renderer_push_matrix();
+					renderer_translate(p[0]+1.1, p[1]-0.4, p[2]);
+					renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 					drawQuad(szx,szx);
-					glPopMatrix();
-					glPushMatrix();
-					glTranslatef(p[0]-1.1, p[1]-0.4, p[2]);
-					glRotatef(IRAND, 0.0, 0.0, 1.0);
+					renderer_pop_matrix();
+					renderer_push_matrix();
+					renderer_translate(p[0]-1.1, p[1]-0.4, p[2]);
+					renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 					drawQuad(szx,szx);
-					glPopMatrix();
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					glColor4f(1.0, 1.0, 1.0, 1.0);
+					renderer_pop_matrix();
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					renderer_set_color(1.0, 1.0, 1.0, 1.0);
 				}
 				break;
 			case EnemyBoss01:
 				if(thisEnemy->preFire)
 				{
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					glBindTexture(GL_TEXTURE_2D, extraTex[EnemyBoss01]);
-					glColor4f(1.0, 1.0, 1.0, thisEnemy->preFire);
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+					renderer_bind_texture( extraTex[EnemyBoss01]);
+					renderer_set_color(1.0, 1.0, 1.0, thisEnemy->preFire);
 					szx = 0.9*thisEnemy->preFire;
 					if(thisEnemy->shootSwap)
 					{
-						glPushMatrix();
-						glTranslatef(p[0]-1.22, p[1]-1.22, p[2]);
-						glRotatef(IRAND, 0.0, 0.0, 1.0);
+						renderer_push_matrix();
+						renderer_translate(p[0]-1.22, p[1]-1.22, p[2]);
+						renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 						drawQuad(szx,szx);
 						drawQuad(szx+0.2,szx+0.2);
-						glPopMatrix();
+						renderer_pop_matrix();
 					}
 					else
 					{
-						glPushMatrix();
-						glTranslatef(p[0]+0.55, p[1]-1.7, p[2]);
-						glRotatef(IRAND, 0.0, 0.0, 1.0);
+						renderer_push_matrix();
+						renderer_translate(p[0]+0.55, p[1]-1.7, p[2]);
+						renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 						drawQuad(szx,szx);
 						drawQuad(szx+0.3,szx+0.3);
-						glPopMatrix();
+						renderer_pop_matrix();
 					}
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					glColor4f(1.0, 1.0, 1.0, 1.0);
+					renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					renderer_set_color(1.0, 1.0, 1.0, 1.0);
 				}
 			 	if(!(((int)thisEnemy->age-272)%256))
 				{
@@ -293,7 +294,7 @@ void	EnemyFleet::update()
 			float size = thisEnemy->size[0]*0.7;
 			float s[2] = { size, size };
 			if( thisEnemy->damage > thisEnemy->baseDamage*0.7 )
-				if( !(game->gameFrame%18) )
+				if( ((int)(game->gameTime/0.36f) != (int)((game->gameTime - game->speedAdj*0.02f)/0.36f)) )
 				{
 					p[0] = thisEnemy->pos[0] + SRAND*s[0];
 					p[1] = thisEnemy->pos[1] + SRAND*s[1];
@@ -301,7 +302,7 @@ void	EnemyFleet::update()
 					game->explosions->addExplo(Explosions::EnemyDamage, p, 0, 1.0);
 				}
 			if( thisEnemy->damage > thisEnemy->baseDamage*0.5 )
-				if( !(game->gameFrame%10) )
+				if( ((int)(game->gameTime/0.20f) != (int)((game->gameTime - game->speedAdj*0.02f)/0.20f)) )
 				{
 					p[0] = thisEnemy->pos[0] + SRAND*s[0];
 					p[1] = thisEnemy->pos[1] + SRAND*s[1];
@@ -309,7 +310,7 @@ void	EnemyFleet::update()
 					game->explosions->addExplo(Explosions::EnemyDamage, p, 0, 1.0);
 				}
 			if( thisEnemy->damage > thisEnemy->baseDamage*0.3 )
-				if( !(game->gameFrame%4) )
+				if( ((int)(game->gameTime/0.08f) != (int)((game->gameTime - game->speedAdj*0.02f)/0.08f)) )
 				{
 					p[0] = thisEnemy->pos[0] + SRAND*s[0];
 					p[1] = thisEnemy->pos[1] + SRAND*s[1];

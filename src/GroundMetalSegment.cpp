@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -56,11 +57,11 @@ void GroundMetalSegment::drawGL()
 
 	age += parent->game->speedAdj;
 
-	clr_sin = 0.5*sin(parent->game->gameFrame*0.001);
+	clr_sin = 0.5*sin(parent->game->gameTime*0.05f);
 	r1_clr[0] = 0.15+clr_sin;
 	r2_clr[0] = 0.15+clr_sin;
 
-	clr_sin = 0.2*sin(parent->game->gameFrame*0.0005);
+	clr_sin = 0.2*sin(parent->game->gameTime*0.025f);
 	c0_clr[0] = 0.28+clr_sin;
 	c0_clr[1] = 0.25+clr_sin;
 	c0_clr[2] = 0.16+clr_sin;
@@ -74,17 +75,17 @@ void GroundMetalSegment::drawGL()
 		case 0:
 			rep = 0.26;
 			tilt = 0.1;
-			S = -parent->game->frame*0.001;
+			S = -parent->game->gameTime*0.05f;
 			blipMirrorT = false;
 			break;
 		case 1:
 			rep = 0.4;
 			tilt = 0.2;
-			S = -parent->game->frame*0.001;
+			S = -parent->game->gameTime*0.05f;
 			blipMirrorT = true;
 			break;
 		case 2:
-			S = -parent->game->frame*0.005;
+			S = -parent->game->gameTime*0.25f;
 			tmp = sin(S);
 			rep = 0.7+tmp;
 			tilt = 0.5+tmp;
@@ -121,44 +122,44 @@ void GroundMetalSegment::drawBlip(float rep, float S, float tilt, bool blipMirro
 {
 	float repA = 0.0;
 	float repB = rep;
-	glColor4f(1.0, 1.0, 1.0, 1.0);
-	glBindTexture(GL_TEXTURE_2D, parent->tex[Ground::Blip]);
-//	glBegin(GL_QUADS);
-	glBegin(GL_TRIANGLES);
-		glTexCoord2f( rep,  repA+S+tilt); glVertex3f(         pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repA+S);      glVertex3f(-size[0]+pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repB+S);      glVertex3f(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
+	renderer_set_color(1.0, 1.0, 1.0, 1.0);
+	renderer_bind_texture( parent->tex[Ground::Blip]);
+//	renderer_begin(DRAW_QUADS);
+	renderer_begin(DRAW_TRIANGLES);
+		renderer_set_texcoord( rep,  repA+S+tilt); renderer_vertex(         pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repA+S);      renderer_vertex(-size[0]+pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repB+S);      renderer_vertex(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f( rep,  repA+S+tilt); glVertex3f(         pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repB+S);      glVertex3f(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  repB+S+tilt); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repA+S+tilt); renderer_vertex(         pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repB+S);      renderer_vertex(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repB+S+tilt); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
 		//--
-		glTexCoord2f( 0.0,  repA+S);      glVertex3f( size[0]+pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( rep,  repA+S+tilt); glVertex3f(         pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( rep,  repB+S+tilt); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repA+S);      renderer_vertex( size[0]+pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repA+S+tilt); renderer_vertex(         pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repB+S+tilt); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f( 0.0,  repA+S);      glVertex3f( size[0]+pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( rep,  repB+S+tilt); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repB+S);      glVertex3f( size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repA+S);      renderer_vertex( size[0]+pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repB+S+tilt); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repB+S);      renderer_vertex( size[0]+pos[0], -size[1]+pos[1], pos[2]);
 
 		if(blipMirrorT) { repA = rep; repB = 0.0; }
 
-		glTexCoord2f( 0.0,  repA+S);      glVertex3f( size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  repA+S+tilt); glVertex3f(	      pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  repB+S+tilt); glVertex3f(	      pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repA+S);      renderer_vertex( size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repA+S+tilt); renderer_vertex(	      pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repB+S+tilt); renderer_vertex(	      pos[0],	       pos[1], pos[2]);
 
-		glTexCoord2f( 0.0,  repA+S);      glVertex3f( size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  repB+S+tilt); glVertex3f(	      pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repB+S);      glVertex3f( size[0]+pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repA+S);      renderer_vertex( size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repB+S+tilt); renderer_vertex(	      pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repB+S);      renderer_vertex( size[0]+pos[0],	       pos[1], pos[2]);
 		//--
-		glTexCoord2f( rep,  repA+S+tilt); glVertex3f(	      pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repA+S);      glVertex3f(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repB+S);      glVertex3f(-size[0]+pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repA+S+tilt); renderer_vertex(	      pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repA+S);      renderer_vertex(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repB+S);      renderer_vertex(-size[0]+pos[0],	       pos[1], pos[2]);
 
-		glTexCoord2f( rep,  repA+S+tilt); glVertex3f(	      pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  repB+S);      glVertex3f(-size[0]+pos[0],	       pos[1], pos[2]);
-		glTexCoord2f( rep,  repB+S+tilt); glVertex3f(         pos[0],	       pos[1], pos[2]);
-	glEnd();
+		renderer_set_texcoord( rep,  repA+S+tilt); renderer_vertex(	      pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  repB+S);      renderer_vertex(-size[0]+pos[0],	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  repB+S+tilt); renderer_vertex(         pos[0],	       pos[1], pos[2]);
+	renderer_end();
 }
 
 //----------------------------------------------------------
@@ -167,79 +168,79 @@ void GroundMetalSegment::drawSurface(float *c0_clr, float *c1_clr,
 {
 	Config *config = Config::instance();
 	float rep = 1.0;
-	glBindTexture(GL_TEXTURE_2D, parent->tex[Ground::Base]);
-	glBegin(GL_TRIANGLES); //-- use triangles to prevent color popping on Utah
+	renderer_bind_texture( parent->tex[Ground::Base]);
+	renderer_begin(DRAW_TRIANGLES); //-- use triangles to prevent color popping on Utah
 	if(config->gfxLevel() > 0)
 	{
-		glColor4fv(c0_clr); glTexCoord2f( rep,  rep); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
-		glColor4fv(c1_clr); glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],          pos[1], pos[2]);
-		glColor4fv(r2_clr); glTexCoord2f( 0.0,  0.0); glVertex3f(-size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(c0_clr); renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_color_v(c1_clr); renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(r2_clr); renderer_set_texcoord( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],          pos[1], pos[2]);
 
-		glColor4fv(c0_clr); glTexCoord2f( rep,  rep); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
-		glColor4fv(r2_clr); glTexCoord2f( 0.0,  0.0); glVertex3f(-size[0]+pos[0],          pos[1], pos[2]);
-		glColor4fv(r0_clr); glTexCoord2f( 0.0,  rep); glVertex3f(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_color_v(c0_clr); renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_color_v(r2_clr); renderer_set_texcoord( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(r0_clr); renderer_set_texcoord( 0.0,  rep); renderer_vertex(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
 
-		glColor4fv(r1_clr); glTexCoord2f( 0.0,  rep); glVertex3f( size[0]+pos[0], -size[1]+pos[1], pos[2]);
-		glColor4fv(r0_clr); glTexCoord2f( 0.0,  0.0); glVertex3f( size[0]+pos[0],          pos[1], pos[2]);
-		glColor4fv(c1_clr); glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(r1_clr); renderer_set_texcoord( 0.0,  rep); renderer_vertex( size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_color_v(r0_clr); renderer_set_texcoord( 0.0,  0.0); renderer_vertex( size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(c1_clr); renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],          pos[1], pos[2]);
 
-		glColor4fv(r1_clr); glTexCoord2f( 0.0,  rep); glVertex3f( size[0]+pos[0], -size[1]+pos[1], pos[2]);
-		glColor4fv(c1_clr); glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],          pos[1], pos[2]);
-		glColor4fv(c0_clr); glTexCoord2f( rep,  rep); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_color_v(r1_clr); renderer_set_texcoord( 0.0,  rep); renderer_vertex( size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_color_v(c1_clr); renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(c0_clr); renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
 
-		glColor4fv(r0_clr); glTexCoord2f( 0.0,  0.0); glVertex3f( size[0]+pos[0],          pos[1], pos[2]);
-		glColor4fv(r1_clr); glTexCoord2f( 0.0,  rep); glVertex3f( size[0]+pos[0],  size[1]+pos[1]+0.1, pos[2]);
-		glColor4fv(c0_clr); glTexCoord2f( rep,  rep); glVertex3f(         pos[0],  size[1]+pos[1]+0.1, pos[2]);
+		renderer_set_color_v(r0_clr); renderer_set_texcoord( 0.0,  0.0); renderer_vertex( size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(r1_clr); renderer_set_texcoord( 0.0,  rep); renderer_vertex( size[0]+pos[0],  size[1]+pos[1]+0.1, pos[2]);
+		renderer_set_color_v(c0_clr); renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0],  size[1]+pos[1]+0.1, pos[2]);
 
-		glColor4fv(r0_clr); glTexCoord2f( 0.0,  0.0); glVertex3f( size[0]+pos[0],          pos[1], pos[2]);
-		glColor4fv(c0_clr); glTexCoord2f( rep,  rep); glVertex3f(         pos[0],  size[1]+pos[1]+0.1, pos[2]);
-		glColor4fv(c1_clr); glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(r0_clr); renderer_set_texcoord( 0.0,  0.0); renderer_vertex( size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(c0_clr); renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0],  size[1]+pos[1]+0.1, pos[2]);
+		renderer_set_color_v(c1_clr); renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],          pos[1], pos[2]);
 
-		glColor4fv(c1_clr); glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],          pos[1], pos[2]);
-		glColor4fv(c0_clr); glTexCoord2f( rep,  rep); glVertex3f(         pos[0],  size[1]+pos[1]+0.1, pos[2]);
-		glColor4fv(r0_clr); glTexCoord2f( 0.0,  rep); glVertex3f(-size[0]+pos[0],  size[1]+pos[1]+0.1, pos[2]);
+		renderer_set_color_v(c1_clr); renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(c0_clr); renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0],  size[1]+pos[1]+0.1, pos[2]);
+		renderer_set_color_v(r0_clr); renderer_set_texcoord( 0.0,  rep); renderer_vertex(-size[0]+pos[0],  size[1]+pos[1]+0.1, pos[2]);
 
-		glColor4fv(c1_clr); glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],          pos[1], pos[2]);
-		glColor4fv(r0_clr); glTexCoord2f( 0.0,  rep); glVertex3f(-size[0]+pos[0],  size[1]+pos[1]+0.1, pos[2]);
-		glColor4fv(r2_clr); glTexCoord2f( 0.0,  0.0); glVertex3f(-size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(c1_clr); renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],          pos[1], pos[2]);
+		renderer_set_color_v(r0_clr); renderer_set_texcoord( 0.0,  rep); renderer_vertex(-size[0]+pos[0],  size[1]+pos[1]+0.1, pos[2]);
+		renderer_set_color_v(r2_clr); renderer_set_texcoord( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],          pos[1], pos[2]);
 	}
 	else
 	{
 		float b = -0.1;
-		glColor4f(c0_clr[0]-b, c0_clr[1]-b, c0_clr[2]-b, c0_clr[3] );
-		glTexCoord2f( rep,  rep); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  0.0); glVertex3f(         pos[0], 		   pos[1], pos[2]);
-		glTexCoord2f( 0.0,  0.0); glVertex3f(-size[0]+pos[0],  	       pos[1], pos[2]);
+		renderer_set_color(c0_clr[0]-b, c0_clr[1]-b, c0_clr[2]-b, c0_clr[3] );
+		renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0], 		   pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],  	       pos[1], pos[2]);
 
-		glTexCoord2f( rep,  rep); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  0.0); glVertex3f(-size[0]+pos[0],          pos[1], pos[2]);
-		glTexCoord2f( 0.0,  rep); glVertex3f(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  rep); renderer_vertex(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f( 0.0,  rep); glVertex3f( size[0]+pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  0.0); glVertex3f( size[0]+pos[0],  	       pos[1], pos[2]);
-		glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  rep); renderer_vertex( size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  0.0); renderer_vertex( size[0]+pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],  	       pos[1], pos[2]);
 
-		glTexCoord2f( 0.0,  rep); glVertex3f( size[0]+pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],  	       pos[1], pos[2]);
-		glTexCoord2f( rep,  rep); glVertex3f(         pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  rep); renderer_vertex( size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f( 0.0,  0.0); glVertex3f( size[0]+pos[0],          pos[1], pos[2]);
-		glTexCoord2f( 0.0,  rep); glVertex3f( size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  rep); glVertex3f(         pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  0.0); renderer_vertex( size[0]+pos[0],          pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  rep); renderer_vertex( size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0],  size[1]+pos[1], pos[2]);
 
-		glTexCoord2f( 0.0,  0.0); glVertex3f( size[0]+pos[0],  	       pos[1], pos[2]);
-		glTexCoord2f( rep,  rep); glVertex3f(         pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  0.0); renderer_vertex( size[0]+pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],  	       pos[1], pos[2]);
 
-		glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],  	       pos[1], pos[2]);
-		glTexCoord2f( rep,  rep); glVertex3f(         pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  rep); glVertex3f(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  rep); renderer_vertex(         pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  rep); renderer_vertex(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
 
-		glTexCoord2f( rep,  0.0); glVertex3f(         pos[0],  	       pos[1], pos[2]);
-		glTexCoord2f( 0.0,  rep); glVertex3f(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f( 0.0,  0.0); glVertex3f(-size[0]+pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( rep,  0.0); renderer_vertex(         pos[0],  	       pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  rep); renderer_vertex(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		renderer_set_texcoord( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],  	       pos[1], pos[2]);
 	}
-	glEnd();
+	renderer_end();
 }
 
 #ifdef EXPERIMENTAL
@@ -259,56 +260,56 @@ void GroundMetalSegment::drawMultiTex(float rep, float S, float tilt, bool blipM
 	float repB = rep;
 
 	glActiveTextureARB(GL_TEXTURE0_ARB);
-	glBindTexture(GL_TEXTURE_2D, parent->tex[Ground::Blip]);
+	renderer_bind_texture( parent->tex[Ground::Blip]);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
 
 	glActiveTextureARB(GL_TEXTURE1_ARB);
-	glBindTexture(GL_TEXTURE_2D, parent->tex[Ground::Base]);
+	renderer_bind_texture( parent->tex[Ground::Base]);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	glEnable(GL_TEXTURE_2D);
+	renderer_enable(GL_TEXTURE_2D);
 
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glBegin(GL_TRIANGLES); //-- use triangles to prevent color popping on Utah
+	renderer_begin(DRAW_TRIANGLES); //-- use triangles to prevent color popping on Utah
 
-		glTexCoord2f_M0( rep,  repA+S+tilt); glColor4fv(c1_clr); glTexCoord2f_M1( 1.0,  0.0); glVertex3f(		  pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repA+S);      glColor4fv(r2_clr); glTexCoord2f_M1( 0.0,  0.0); glVertex3f(-size[0]+pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repB+S);      glColor4fv(r0_clr); glTexCoord2f_M1( 0.0,  1.0); glVertex3f(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repA+S+tilt); renderer_set_color_v(c1_clr); glTexCoord2f_M1( 1.0,  0.0); renderer_vertex(		  pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repA+S);      renderer_set_color_v(r2_clr); glTexCoord2f_M1( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repB+S);      renderer_set_color_v(r0_clr); glTexCoord2f_M1( 0.0,  1.0); renderer_vertex(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f_M0( rep,  repA+S+tilt); glColor4fv(c1_clr); glTexCoord2f_M1( 1.0,  0.0); glVertex3f(		  pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repB+S);      glColor4fv(r0_clr); glTexCoord2f_M1( 0.0,  1.0); glVertex3f(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repB+S+tilt); glColor4fv(c0_clr); glTexCoord2f_M1( 1.0,  1.0); glVertex3f(		  pos[0], -size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repA+S+tilt); renderer_set_color_v(c1_clr); glTexCoord2f_M1( 1.0,  0.0); renderer_vertex(		  pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repB+S);      renderer_set_color_v(r0_clr); glTexCoord2f_M1( 0.0,  1.0); renderer_vertex(-size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repB+S+tilt); renderer_set_color_v(c0_clr); glTexCoord2f_M1( 1.0,  1.0); renderer_vertex(		  pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f_M0( 0.0,  repA+S);      glColor4fv(r0_clr); glTexCoord2f_M1( 0.0,  0.0); glVertex3f( size[0]+pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repA+S+tilt); glColor4fv(c1_clr); glTexCoord2f_M1( 1.0,  0.0); glVertex3f(		  pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repB+S+tilt); glColor4fv(c0_clr); glTexCoord2f_M1( 1.0,  1.0); glVertex3f(		  pos[0], -size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repA+S);      renderer_set_color_v(r0_clr); glTexCoord2f_M1( 0.0,  0.0); renderer_vertex( size[0]+pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repA+S+tilt); renderer_set_color_v(c1_clr); glTexCoord2f_M1( 1.0,  0.0); renderer_vertex(		  pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repB+S+tilt); renderer_set_color_v(c0_clr); glTexCoord2f_M1( 1.0,  1.0); renderer_vertex(		  pos[0], -size[1]+pos[1], pos[2]);
 
-		glTexCoord2f_M0( 0.0,  repA+S);      glColor4fv(r0_clr); glTexCoord2f_M1( 0.0,  0.0); glVertex3f( size[0]+pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repB+S+tilt); glColor4fv(c0_clr); glTexCoord2f_M1( 1.0,  1.0); glVertex3f(		  pos[0], -size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repB+S);      glColor4fv(r1_clr); glTexCoord2f_M1( 0.0,  1.0); glVertex3f( size[0]+pos[0], -size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repA+S);      renderer_set_color_v(r0_clr); glTexCoord2f_M1( 0.0,  0.0); renderer_vertex( size[0]+pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repB+S+tilt); renderer_set_color_v(c0_clr); glTexCoord2f_M1( 1.0,  1.0); renderer_vertex(		  pos[0], -size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repB+S);      renderer_set_color_v(r1_clr); glTexCoord2f_M1( 0.0,  1.0); renderer_vertex( size[0]+pos[0], -size[1]+pos[1], pos[2]);
 
 		if(blipMirrorT) { repA = rep; repB = 0.0; }
 
-		glTexCoord2f_M0( 0.0,  repA+S);      glColor4fv(r1_clr); glTexCoord2f_M1( 0.0,  1.0); glVertex3f( size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repA+S+tilt); glColor4fv(c0_clr); glTexCoord2f_M1( 1.0,  1.0); glVertex3f(		  pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repB+S+tilt); glColor4fv(c1_clr); glTexCoord2f_M1( 1.0,  0.0); glVertex3f(		  pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repA+S);      renderer_set_color_v(r1_clr); glTexCoord2f_M1( 0.0,  1.0); renderer_vertex( size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repA+S+tilt); renderer_set_color_v(c0_clr); glTexCoord2f_M1( 1.0,  1.0); renderer_vertex(		  pos[0],  size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repB+S+tilt); renderer_set_color_v(c1_clr); glTexCoord2f_M1( 1.0,  0.0); renderer_vertex(		  pos[0],		   pos[1], pos[2]);
 
-		glTexCoord2f_M0( 0.0,  repA+S);      glColor4fv(r1_clr); glTexCoord2f_M1( 0.0,  1.0); glVertex3f( size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repB+S+tilt); glColor4fv(c1_clr); glTexCoord2f_M1( 1.0,  0.0); glVertex3f(		  pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repB+S);      glColor4fv(r0_clr); glTexCoord2f_M1( 0.0,  0.0); glVertex3f( size[0]+pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repA+S);      renderer_set_color_v(r1_clr); glTexCoord2f_M1( 0.0,  1.0); renderer_vertex( size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repB+S+tilt); renderer_set_color_v(c1_clr); glTexCoord2f_M1( 1.0,  0.0); renderer_vertex(		  pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repB+S);      renderer_set_color_v(r0_clr); glTexCoord2f_M1( 0.0,  0.0); renderer_vertex( size[0]+pos[0],		   pos[1], pos[2]);
 		//--
-		glTexCoord2f_M0( rep,  repA+S+tilt); glColor4fv(c0_clr); glTexCoord2f_M1( 1.0,  1.0); glVertex3f(		  pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repA+S);      glColor4fv(r0_clr); glTexCoord2f_M1( 0.0,  1.0); glVertex3f(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repB+S);      glColor4fv(r2_clr); glTexCoord2f_M1( 0.0,  0.0); glVertex3f(-size[0]+pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repA+S+tilt); renderer_set_color_v(c0_clr); glTexCoord2f_M1( 1.0,  1.0); renderer_vertex(		  pos[0],  size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repA+S);      renderer_set_color_v(r0_clr); glTexCoord2f_M1( 0.0,  1.0); renderer_vertex(-size[0]+pos[0],  size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repB+S);      renderer_set_color_v(r2_clr); glTexCoord2f_M1( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],		   pos[1], pos[2]);
 
-		glTexCoord2f_M0( rep,  repA+S+tilt); glColor4fv(c0_clr); glTexCoord2f_M1( 1.0,  1.0); glVertex3f(		  pos[0],  size[1]+pos[1], pos[2]);
-		glTexCoord2f_M0( 0.0,  repB+S);      glColor4fv(r2_clr); glTexCoord2f_M1( 0.0,  0.0); glVertex3f(-size[0]+pos[0],		   pos[1], pos[2]);
-		glTexCoord2f_M0( rep,  repB+S+tilt); glColor4fv(c1_clr); glTexCoord2f_M1( 1.0,  0.0); glVertex3f(		  pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repA+S+tilt); renderer_set_color_v(c0_clr); glTexCoord2f_M1( 1.0,  1.0); renderer_vertex(		  pos[0],  size[1]+pos[1], pos[2]);
+		glTexCoord2f_M0( 0.0,  repB+S);      renderer_set_color_v(r2_clr); glTexCoord2f_M1( 0.0,  0.0); renderer_vertex(-size[0]+pos[0],		   pos[1], pos[2]);
+		glTexCoord2f_M0( rep,  repB+S+tilt); renderer_set_color_v(c1_clr); glTexCoord2f_M1( 1.0,  0.0); renderer_vertex(		  pos[0],		   pos[1], pos[2]);
 
-	glEnd();
+	renderer_end();
 
-	glDisable(GL_TEXTURE_2D);
+	renderer_disable(GL_TEXTURE_2D);
 	glActiveTextureARB(GL_TEXTURE0_ARB);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 

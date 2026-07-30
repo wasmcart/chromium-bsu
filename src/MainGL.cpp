@@ -39,11 +39,15 @@
 #endif
 #endif
 
+#ifdef WASM_CART
+#include "TextBitmap.h"
+#else
 #if defined(TEXT_GLC)
 #include "TextGLC.h"
 #endif
 #if defined(TEXT_FTGL)
 #include "TextFTGL.h"
+#endif
 #endif
 
 #include "Config.h"
@@ -86,37 +90,37 @@ int MainGL::initGL()
 	if( config->debug() ) fprintf(stderr, _("initGL()\n"));
 	reshapeGL(config->screenW(), config->screenH());
 
-	glDisable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	renderer_disable(GL_DEPTH_TEST);
+	renderer_set_depth_func(GL_LEQUAL);
 
-	glEnable(GL_TEXTURE_2D);
+	renderer_enable(GL_TEXTURE_2D);
 
-	glEnable(GL_BLEND);
-//	glDisable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_enable(GL_BLEND);
+//	renderer_disable(GL_BLEND);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(config->blend())
 	{
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glEnable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		renderer_enable(GL_BLEND);
+		renderer_disable(GL_ALPHA_TEST);
 	}
 	else
 	{
-		glAlphaFunc(GL_GREATER, 0.2);
+		renderer_set_alpha_func(GL_GREATER, 0.2);
 
-		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
+		renderer_disable(GL_BLEND);
+		renderer_enable(GL_ALPHA_TEST);
 	}
 
-//	glDisable(GL_CULL_FACE);
-	glEnable(GL_CULL_FACE);
-	glDisable(GL_NORMALIZE);
+//	renderer_disable(GL_CULL_FACE);
+	renderer_enable(GL_CULL_FACE);
+	renderer_disable(GL_NORMALIZE);
 
-	glPointSize(1.0);
-	glLineWidth(1.0);
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+	renderer_set_point_size(1.0);
+	renderer_set_line_width(1.0);
+	renderer_set_clear_color( 0.0, 0.0, 0.0, 1.0 );
 
 #ifdef IMAGE_GLPNG
 	pngSetViewingGamma(config->viewGamma());
@@ -128,6 +132,9 @@ int MainGL::initGL()
 //----------------------------------------------------------
 void MainGL::loadTextures()
 {
+#ifdef WASM_CART
+	game->text = new TextBitmap();
+#else
 	try {
 #if defined(TEXT_GLC) && defined(TEXT_FTGL)
 		Config *config = Config::instance();
@@ -153,6 +160,7 @@ void MainGL::loadTextures()
 		fprintf(stderr, _("error loading font\n"));
 		exit(1);
 	}
+#endif
 }
 
 //----------------------------------------------------------
@@ -190,13 +198,13 @@ void MainGL::drawGameGL()
 {
 	Config *config = Config::instance();
 	//-- Clear buffers
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//	glClear( GL_COLOR_BUFFER_BIT );
+	renderer_clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	renderer_clear( GL_COLOR_BUFFER_BIT );
 
 	//-- Place camera
-	glLoadIdentity();
-	glTranslatef(0.0, 0.0, config->zTrans());
-//	glTranslatef(0.0, 5.0, -12.0);
+	renderer_load_identity();
+	renderer_translate(0.0, 0.0, config->zTrans());
+//	renderer_translate(0.0, 5.0, -12.0);
 
 	if(!game->game_pause)
 	{
@@ -220,10 +228,10 @@ void MainGL::drawGameGL()
 		game->audio->update();
 
 		game->hero->update();
-		game->gameFrame++;
+		game->gameTime += game->speedAdj * 0.02f;
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//-- Draw background
 	game->ground->drawGL();
@@ -235,7 +243,7 @@ void MainGL::drawGameGL()
 	if(config->gfxLevel() > 0)
 		game->statusDisplay->darkenGL();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
 
 	game->powerUps->drawGL();
 
@@ -258,17 +266,17 @@ void MainGL::drawDeadGL()
 	game->heroDeath -= game->speedAdj;
 
 	//-- Clear buffers
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderer_clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//-- Place camera
-	glLoadIdentity();
+	renderer_load_identity();
 	if(game->heroDeath > 0)
 	{
 		float z = 1.0*game->heroDeath/DEATH_TIME;
-		glTranslatef(0.0, 0.0, config->zTrans()-z*z);
+		renderer_translate(0.0, 0.0, config->zTrans()-z*z);
 	}
 	else
-		glTranslatef(0.0, 0.0, config->zTrans());
+		renderer_translate(0.0, 0.0, config->zTrans());
 
 	//-- Add items to scene
 	game->itemAdd->putScreenItems();
@@ -281,9 +289,9 @@ void MainGL::drawDeadGL()
 	game->heroAmmo->checkForHits(game->enemyFleet);
 	game->audio->update();
 	game->hero->update();
-	game->gameFrame++;
+	game->gameTime += game->speedAdj * 0.02f;
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//-- Draw background
 	game->ground->drawGL();
 	//-- Draw actors
@@ -292,7 +300,7 @@ void MainGL::drawDeadGL()
 	if(config->gfxLevel() > 0)
 		game->statusDisplay->darkenGL();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
 	game->powerUps->drawGL();
 	//-- Draw ammo
 	game->heroAmmo->drawGL();
@@ -345,11 +353,11 @@ void MainGL::drawSuccessGL()
 	}
 
 	//-- Clear buffers
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderer_clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//-- Place camera
-	glLoadIdentity();
-	glTranslatef(0.0, 0.0, config->zTrans());
+	renderer_load_identity();
+	renderer_translate(0.0, 0.0, config->zTrans());
 
 	//-- Update scene
 	game->enemyFleet->update();
@@ -358,7 +366,7 @@ void MainGL::drawSuccessGL()
 	game->hero->update();
 	game->audio->update();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//-- Draw background
 	game->ground->drawGL();
 	//-- Draw actors
@@ -367,7 +375,7 @@ void MainGL::drawSuccessGL()
 	if(config->gfxLevel() > 0)
 		game->statusDisplay->darkenGL();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
 	//-- Draw ammo
 	game->heroAmmo->drawGL();
 	//-- Draw explosions
@@ -428,16 +436,16 @@ void MainGL::drawTextGL(const char *string, float pulse, float scale)
 		{
 			for(i = 0; i < 6; i++)
 			{
-				glColor4f(1.0, ca*ca*0.3, ca*0.3, aa*aa);
-				x_sin = 1.75*sin(i+game->frame*0.06);
-				y_sin = 0.75*sin(i+game->frame*0.09);
+				renderer_set_color(1.0, ca*ca*0.3, ca*0.3, aa*aa);
+				x_sin = 1.75*sin(i+game->gameTime*3.0f);
+				y_sin = 0.75*sin(i+game->gameTime*4.5f);
 
-				glPushMatrix();
-				glScalef(scale, scale*0.75, 1.0);
+				renderer_push_matrix();
+				renderer_scale(scale, scale*0.75, 1.0);
 				width = game->text->Advance(index[l]);
-				glTranslatef(-(width/2.0)-x_sin, y+y_sin, 0.0);
+				renderer_translate(-(width/2.0)-x_sin, y+y_sin, 0.0);
 				game->text->Render(index[l]);
-				glPopMatrix();
+				renderer_pop_matrix();
 
 			}
 		}
@@ -451,12 +459,12 @@ void MainGL::drawTextGL(const char *string, float pulse, float scale)
 void MainGL::reshapeGL(int , int )
 {
 	Config *config = Config::instance();
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective( config->screenFOV(),
+	renderer_matrix_mode(MATRIX_PROJECTION);
+	renderer_load_identity();
+	renderer_perspective( config->screenFOV(),
 					config->screenA(),
 					config->screenNear(),
 					config->screenFar());
-	glMatrixMode(GL_MODELVIEW);
-	glViewport(0, 0, config->screenW(), config->screenH());
+	renderer_matrix_mode(MATRIX_MODELVIEW);
+	renderer_viewport(0, 0, config->screenW(), config->screenH());
 }

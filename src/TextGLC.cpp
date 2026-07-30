@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright 2009 Paul Wise
  *
@@ -82,15 +83,15 @@ TextGLC::~TextGLC()
 
 void TextGLC::Render(const char* str, const int len)
 {
-	glPushMatrix();
-	glScalef(24.f, 24.f, 1.f);
+	renderer_push_matrix();
+	renderer_scale(24.f, 24.f, 1.f);
 
 	if( len == -1 )
 		glcRenderString(str);
 	else
 		glcRenderCountedString(len, str);
 
-	glPopMatrix();
+	renderer_pop_matrix();
 }
 
 float TextGLC::Advance(const char* str, const int len)

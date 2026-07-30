@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -115,7 +116,7 @@ void EnemyAmmo::deleteTextures()
 {
 	for(int i = 0; i < NUM_ENEMY_AMMO_TYPES; i++)
 	{
-		glDeleteTextures(1, &ammoTex[i]);
+		renderer_delete_textures(1, &ammoTex[i]);
 		ammoTex[i] = 0;
 	}
 }
@@ -174,9 +175,9 @@ void EnemyAmmo::addAmmo(int type, float pos[3], float vel[3])
 	if(type >= 0 && type < NUM_ENEMY_AMMO_TYPES)
 	{
 		float v[3] = {
-			vel[0]*game->speedAdj,
-			vel[1]*game->speedAdj,
-			vel[2]*game->speedAdj, };
+			vel[0],
+			vel[1],
+			vel[2], };
 		newAmmo = getNewAmmo();
 		newAmmo->init(pos, v, ammoDamage[type]);
 		newAmmo->back = ammoRoot[type];
@@ -285,43 +286,43 @@ void EnemyAmmo::drawGL()
 
 	for(i = 0; i < NUM_ENEMY_AMMO_TYPES; i++)
 	{
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBindTexture(GL_TEXTURE_2D, ammoTex[i]);
+		renderer_set_color(1.0, 1.0, 1.0, 1.0);
+		renderer_bind_texture( ammoTex[i]);
 		thisAmmo = ammoRoot[i]->next;
-		glBegin(GL_QUADS);
+		renderer_begin(DRAW_QUADS);
 		while(thisAmmo)
 		{
 			pos = thisAmmo->pos;
 			switch(IRAND%4)
 			{
 				case 0:
-					glTexCoord2f(0.0, 0.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
-					glTexCoord2f(0.0, 1.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(1.0, 1.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(1.0, 0.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 0.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 1.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 1.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 0.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
 					break;
 				case 1:
-					glTexCoord2f(1.0, 0.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
-					glTexCoord2f(1.0, 1.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(0.0, 1.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(0.0, 0.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 0.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 1.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 1.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 0.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
 					break;
 				case 2:
-					glTexCoord2f(0.0, 1.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
-					glTexCoord2f(0.0, 0.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(1.0, 0.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(1.0, 1.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 1.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 0.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 0.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 1.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
 					break;
 				case 3:
-					glTexCoord2f(1.0, 1.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
-					glTexCoord2f(1.0, 0.0); glVertex3f(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(0.0, 0.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
-					glTexCoord2f(0.0, 1.0); glVertex3f(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 1.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(1.0, 0.0); renderer_vertex(pos[0]-ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 0.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]-ammoSize[i][1], pos[2]);
+					renderer_set_texcoord(0.0, 1.0); renderer_vertex(pos[0]+ammoSize[i][0], pos[1]+ammoSize[i][1], pos[2]);
 					break;
 			}
 			thisAmmo = thisAmmo->next; //ADVANCE
 		}
-		glEnd();
+		renderer_end();
 	}
 }
 

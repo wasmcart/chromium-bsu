@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright 2008 Tristan Heaven
  * Copyright 2008 Paul Wise
@@ -56,14 +57,14 @@ GLuint Image::load(const char *filename, ImageMipMap mipmap, ImageBlend trans, G
 		return texture;
 	}
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	renderer_gen_textures(1, &texture);
+	renderer_bind_texture( texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapst);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapst);
+	renderer_tex_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapst);
+	renderer_tex_parameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapst);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magfilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minfilter);
+	renderer_tex_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magfilter);
+	renderer_tex_parameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minfilter);
 
 	// For the blend types, we need to convert to RGBA
 	if( trans != IMG_SOLID && trans != IMG_ALPHA )
@@ -160,28 +161,28 @@ GLuint Image::load(const char *filename, ImageMipMap mipmap, ImageBlend trans, G
 	SDL_LockSurface( image );
 
 	GLint pack, unpack;
-	glGetIntegerv(GL_PACK_ALIGNMENT, &pack);
-	glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	renderer_get_integerv(GL_PACK_ALIGNMENT, &pack);
+	renderer_get_integerv(GL_UNPACK_ALIGNMENT, &unpack);
+	renderer_pixel_storei(GL_PACK_ALIGNMENT, 1);
+	renderer_pixel_storei(GL_UNPACK_ALIGNMENT, 1);
 
 	switch ( mipmap )
 	{
 		case IMG_NOMIPMAPS:
-			glTexImage2D(GL_TEXTURE_2D, 0, image->format->BytesPerPixel, image->w, image->h, 0, format, GL_UNSIGNED_BYTE, image->pixels);
+			renderer_tex_image_2d(GL_TEXTURE_2D, 0, image->format->BytesPerPixel, image->w, image->h, 0, format, GL_UNSIGNED_BYTE, image->pixels);
 			break;
 		case IMG_SIMPLEMIPMAPS:
-			gluBuild2DMipmaps(GL_TEXTURE_2D, image->format->BytesPerPixel, image->w, image->h, format, GL_UNSIGNED_BYTE, image->pixels);
+			renderer_build_mipmaps(GL_TEXTURE_2D, image->format->BytesPerPixel, image->w, image->h, format, GL_UNSIGNED_BYTE, image->pixels);
 			break;
 		case IMG_BUILDMIPMAPS:
-			gluBuild2DMipmaps(GL_TEXTURE_2D, image->format->BytesPerPixel, image->w, image->h, format, GL_UNSIGNED_BYTE, image->pixels);
+			renderer_build_mipmaps(GL_TEXTURE_2D, image->format->BytesPerPixel, image->w, image->h, format, GL_UNSIGNED_BYTE, image->pixels);
 			break;
 		default:
 			fprintf(stderr, "Bad mipmap type loading %s\n", filename);
 	}
 
-	glPixelStorei(GL_PACK_ALIGNMENT, pack);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, unpack);
+	renderer_pixel_storei(GL_PACK_ALIGNMENT, pack);
+	renderer_pixel_storei(GL_UNPACK_ALIGNMENT, unpack);
 
 	SDL_UnlockSurface( image );
 

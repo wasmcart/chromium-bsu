@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -59,8 +60,8 @@ GroundSea::~GroundSea()
 //----------------------------------------------------------
 void GroundSea::drawGL()
 {
-	glClearColor( 0.15, 0.12, 0.10, 1.0 );
-//	glClearColor(0.27451, 0.235294, 0.392157, 1.0); // web page background color
+	renderer_set_clear_color( 0.15, 0.12, 0.10, 1.0 );
+//	renderer_set_clear_color(0.27451, 0.235294, 0.392157, 1.0); // web page background color
 
 	GroundSegment	*seg;
 	GroundSegment	*tmp;
@@ -74,7 +75,7 @@ void GroundSea::drawGL()
 		seg = seg->next;
 	}
 
-	glColor4f(0.9, 0.9, 0.9, 0.7);
+	renderer_set_color(0.9, 0.9, 0.9, 0.7);
 	seg = rootSeg->next;
 	while(seg)
 	{

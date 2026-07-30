@@ -49,7 +49,7 @@ void EnemyAircraft_Omni::init(float *p, float randFact)
 	size[0] = 0.7;
 	size[1] = 0.7;
 	collisionMove = 0.7;
-	vel[1] = -0.071-frand*0.04;
+	vel[1] = (-0.071-frand*0.04)*0.60f;
 
 }
 
@@ -65,7 +65,7 @@ void EnemyAircraft_Omni::update()
 	float	a = hpos[0]-pos[0];
 	float	b = hpos[1]-pos[1];
 	float	dist;
-	float	ammoSpeed = 0.35*game->speedAdj;
+	float	ammoSpeed = 0.35;
 
 	int 	omniSwap = 108;
 	//-- update age
@@ -81,13 +81,13 @@ void EnemyAircraft_Omni::update()
 
 	float	p[3] = { pos[0], pos[1], pos[2] };
 
-		shootSwap = shootSwap%omniSwap;
-		if(shootSwap < 18)
+		if((int)shootSwap >= omniSwap) shootSwap = 0;
+		if((int)shootSwap < 18 && ageInterval(1))
 		{
-			if(!(shootSwap%6))
+			if(!((int)shootSwap%6))
 			{
 				//ammoSpeed = 0.22;
-				ammoSpeed = 0.3*game->gameSkill*game->speedAdj;
+				ammoSpeed = 0.3*game->gameSkill;
 				dist = fabs(a) + fabs(b);
 				//dist = sqrt(a*a+b*b);
 				v[0] = a/dist;
@@ -99,7 +99,7 @@ void EnemyAircraft_Omni::update()
 			game->enemyAmmo->addAmmo(1, p, shootVec);
 		}
 		if(pos[1] < config->screenBoundY())
-			shootSwap++;
+			shootSwap += game->speedAdj;
 
 }
 
@@ -114,7 +114,7 @@ void EnemyAircraft_Omni::move()
 		hpos = pos;
 	float	diff[2] = { hpos[0]-pos[0], hpos[1]-pos[1] };
 
-	lastMoveX = (0.9*lastMoveX)+(0.1*(0.01*diff[0]));
+	lastMoveX = (powf(0.9f,game->speedAdj)*lastMoveX)+(0.1*game->speedAdj*(0.01*diff[0]));
 	pos[0] += game->speedAdj*(randMoveX*lastMoveX);
 	pos[1] += (game->speedAdj*(vel[1] * game->gameSkill));
 

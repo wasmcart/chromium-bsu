@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -153,111 +154,111 @@ EnemyAircraft* EnemyAircraft::makeNewEnemy(EnemyType et, float p[3], float randF
 //	float *p = pos;
 //	float szx = size[0];
 //	float szy = size[1];
-//	glBindTexture(GL_TEXTURE_2D, tex);
-//	glColor4f(1.0, 1.0, 1.0, 1.0);
+//	renderer_bind_texture( tex);
+//	renderer_set_color(1.0, 1.0, 1.0, 1.0);
 //
-//	glPushMatrix();
-//	glTranslatef( p[0],  p[1],  p[2] );
-//	glBegin(GL_TRIANGLE_STRIP);
-//		glTexCoord2f(1.0, 0.0); glVertex3f( szx,  szy, 0.0);
-//		glTexCoord2f(0.0, 0.0); glVertex3f(-szx,  szy, 0.0);
-//		glTexCoord2f(1.0, 1.0); glVertex3f( szx, -szy, 0.0);
-//		glTexCoord2f(0.0, 1.0); glVertex3f(-szx, -szy, 0.0);
-//	glEnd();
-//	glPopMatrix();
+//	renderer_push_matrix();
+//	renderer_translate( p[0],  p[1],  p[2] );
+//	renderer_begin(DRAW_TRIANGLE_STRIP);
+//		renderer_set_texcoord(1.0, 0.0); renderer_vertex( szx,  szy, 0.0);
+//		renderer_set_texcoord(0.0, 0.0); renderer_vertex(-szx,  szy, 0.0);
+//		renderer_set_texcoord(1.0, 1.0); renderer_vertex( szx, -szy, 0.0);
+//		renderer_set_texcoord(0.0, 1.0); renderer_vertex(-szx, -szy, 0.0);
+//	renderer_end();
+//	renderer_pop_matrix();
 //
 //	switch(type)
 //	{
 //		case EnemyStraight:
 //			if(preFire)
 //			{
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-//				glBindTexture(GL_TEXTURE_2D, xtraTex);
-//				glColor4f(1.0, 1.0, 1.0, preFire);
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+//				renderer_bind_texture( xtraTex);
+//				renderer_set_color(1.0, 1.0, 1.0, preFire);
 //				szx = 0.55*preFire;
-//				glPushMatrix();
-//				glTranslatef(p[0], p[1]-0.9, p[2]);
-//				glRotatef(IRAND, 0.0, 0.0, 1.0);
+//				renderer_push_matrix();
+//				renderer_translate(p[0], p[1]-0.9, p[2]);
+//				renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 //				drawQuad(szx,szx+0.1);
-//				glPopMatrix();
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//				glColor4f(1.0, 1.0, 1.0, 1.0);
+//				renderer_pop_matrix();
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//				renderer_set_color(1.0, 1.0, 1.0, 1.0);
 //			}
 //			break;
 //		case EnemyOmni:
-//			glColor4f(1.0, 0.0, 0.0, 1.0);
-//			glBindTexture(GL_TEXTURE_2D, xtraTex);
-//			glPushMatrix();
-//			glTranslatef(p[0], p[1], p[2]);
-//			glRotatef(-(age*8), 0.0, 0.0, 1.0);
+//			renderer_set_color(1.0, 0.0, 0.0, 1.0);
+//			renderer_bind_texture( xtraTex);
+//			renderer_push_matrix();
+//			renderer_translate(p[0], p[1], p[2]);
+//			renderer_rotate(-(age*8), 0.0, 0.0, 1.0);
 //			drawQuad(szx,szy);
-//			glPopMatrix();
-//			glColor4f(1.0, 1.0, 1.0, 1.0);
+//			renderer_pop_matrix();
+//			renderer_set_color(1.0, 1.0, 1.0, 1.0);
 //			break;
 //		case EnemyTank:
 //			if(preFire)
 //			{
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-//				glBindTexture(GL_TEXTURE_2D, xtraTex);
-//				glColor4f(1.0, 1.0, 1.0, preFire);
-//				glPushMatrix();
-//				glTranslatef(p[0], p[1]-0.63, p[2]);//NOTE: offset is ~szy*0.3
-//				glRotatef(IRAND, 0.0, 0.0, 1.0);
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+//				renderer_bind_texture( xtraTex);
+//				renderer_set_color(1.0, 1.0, 1.0, preFire);
+//				renderer_push_matrix();
+//				renderer_translate(p[0], p[1]-0.63, p[2]);//NOTE: offset is ~szy*0.3
+//				renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 //				szx = 0.4+0.6*preFire;
 //				drawQuad(szx,szx);
-//				glPopMatrix();
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//				glColor4f(1.0, 1.0, 1.0, 1.0);
+//				renderer_pop_matrix();
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//				renderer_set_color(1.0, 1.0, 1.0, 1.0);
 //			}
 //			break;
 //		case EnemyBoss00:
 //			if(preFire)
 //			{
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-//				glBindTexture(GL_TEXTURE_2D, xtraTex);
-//				glColor4f(1.0, 1.0, 1.0, preFire);
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+//				renderer_bind_texture( xtraTex);
+//				renderer_set_color(1.0, 1.0, 1.0, preFire);
 //				szx = 0.4+0.6*preFire;
-//				glPushMatrix();
-//				glTranslatef(p[0]+1.1, p[1]-0.4, p[2]);
-//				glRotatef(IRAND, 0.0, 0.0, 1.0);
+//				renderer_push_matrix();
+//				renderer_translate(p[0]+1.1, p[1]-0.4, p[2]);
+//				renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 //				drawQuad(szx,szx);
-//				glPopMatrix();
-//				glPushMatrix();
-//				glTranslatef(p[0]-1.1, p[1]-0.4, p[2]);
-//				glRotatef(IRAND, 0.0, 0.0, 1.0);
+//				renderer_pop_matrix();
+//				renderer_push_matrix();
+//				renderer_translate(p[0]-1.1, p[1]-0.4, p[2]);
+//				renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 //				drawQuad(szx,szx);
-//				glPopMatrix();
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//				glColor4f(1.0, 1.0, 1.0, 1.0);
+//				renderer_pop_matrix();
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//				renderer_set_color(1.0, 1.0, 1.0, 1.0);
 //			}
 //			break;
 //		case EnemyBoss01:
 //			if(preFire)
 //			{
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-//				glBindTexture(GL_TEXTURE_2D, xtraTex);
-//				glColor4f(1.0, 1.0, 1.0, preFire);
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+//				renderer_bind_texture( xtraTex);
+//				renderer_set_color(1.0, 1.0, 1.0, preFire);
 //				szx = 0.9*preFire;
 //				if(shootSwap)
 //				{
-//					glPushMatrix();
-//					glTranslatef(p[0]-1.22, p[1]-1.22, p[2]);
-//					glRotatef(IRAND, 0.0, 0.0, 1.0);
+//					renderer_push_matrix();
+//					renderer_translate(p[0]-1.22, p[1]-1.22, p[2]);
+//					renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 //					drawQuad(szx,szx);
 //					drawQuad(szx+0.2,szx+0.2);
-//					glPopMatrix();
+//					renderer_pop_matrix();
 //				}
 //				else
 //				{
-//					glPushMatrix();
-//					glTranslatef(p[0]+0.55, p[1]-1.7, p[2]);
-//					glRotatef(IRAND, 0.0, 0.0, 1.0);
+//					renderer_push_matrix();
+//					renderer_translate(p[0]+0.55, p[1]-1.7, p[2]);
+//					renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 //					drawQuad(szx,szx);
 //					drawQuad(szx+0.3,szx+0.3);
-//					glPopMatrix();
+//					renderer_pop_matrix();
 //				}
-//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//				glColor4f(1.0, 1.0, 1.0, 1.0);
+//				renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//				renderer_set_color(1.0, 1.0, 1.0, 1.0);
 //			}
 //			break;
 //		default:
@@ -285,6 +286,14 @@ bool EnemyAircraft::checkHit(ActiveAmmo *ammo)
 void EnemyAircraft::calcShootInterval()
 {
 	shootInterval = 1;
+}
+
+//----------------------------------------------------------
+bool EnemyAircraft::ageInterval(int N)
+{
+	float prevAge = age - game->speedAdj;
+	if (prevAge < 0) prevAge = 0;
+	return (int)age / N != (int)prevAge / N;
 }
 
 //----------------------------------------------------------

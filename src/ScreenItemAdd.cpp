@@ -93,7 +93,7 @@ void ScreenItemAdd::putScreenItems()
 
 	while(curItem)
 	{
-		if(curItem->releaseTime <= game->gameFrame)
+		if(curItem->releaseTime <= game->gameTime * 50.0f)
 		{
 			switch(curItem->item->itemType())
 			{

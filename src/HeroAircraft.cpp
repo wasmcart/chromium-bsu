@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -83,8 +84,8 @@ void HeroAircraft::loadTextures()
 //----------------------------------------------------------
 void HeroAircraft::deleteTextures()
 {
-	glDeleteTextures(1, &heroTex);
-	glDeleteTextures(1, &bombTex);
+	renderer_delete_textures(1, &heroTex);
+	renderer_delete_textures(1, &bombTex);
 	heroTex = 0;
 	bombTex = 0;
 }
@@ -359,7 +360,7 @@ void HeroAircraft::doDamage(float d)
 //----------------------------------------------------------
 void HeroAircraft::fireGun(bool status)
 {
-	if(dontShow)
+	if(dontShow > 0.0f)
 		return;
 	if(status && game->gameMode != Global::HeroDead)
 	{
@@ -386,7 +387,7 @@ void HeroAircraft::shootGun()
 
 	if( gunPause[0] <= 0)
 	{
-		gunPause[0] = 5;
+		gunPause[0] = 3;
 
 		p[0] = pos[0]+0.3;
 		p[1] = pos[1]+0.8;
@@ -515,7 +516,7 @@ void HeroAircraft::checkForCollisions(EnemyFleet *fleet)
 		diffX = pos[0]-enemy->pos[0];
 		diffY = pos[1]-enemy->pos[1];
 		dist = fabs(diffX) + fabs(diffY);
-		if(!dontShow && dist < enemy->size[0]+size[0])
+		if(dontShow <= 0.0f && dist < enemy->size[0]+size[0])
 		{
 			//-- damage
 			power = -enemy->damage*0.5;
@@ -572,7 +573,7 @@ void HeroAircraft::checkForCollisions(EnemyFleet *fleet)
 //----------------------------------------------------------
 void HeroAircraft::checkForPowerUps(PowerUps *powerUps)
 {
-	if(dontShow)
+	if(dontShow > 0.0f)
 		return;
 	float	dist;
 	float	stock;
@@ -685,12 +686,12 @@ void HeroAircraft::checkForPowerUps(PowerUps *powerUps)
 //----------------------------------------------------------
 void HeroAircraft::update()
 {
-	if(dontShow > 1)
+	if(dontShow > 1.0f)
 	{
-		pos[0] =  		cos(game->frame*0.02) * 9.0;
-		pos[1] =  4.0 + sin(game->frame*0.07) * 2.0;
+		pos[0] =  		cos(game->gameTime*1.0f) * 9.0;
+		pos[1] =  4.0 + sin(game->gameTime*3.5f) * 2.0;
 	}
-	else if(dontShow == 1)
+	else if(dontShow > 0.0f)
 	{
 		pos[0] =  0.0f;
 		pos[1] = -3.0f;
@@ -710,8 +711,8 @@ void HeroAircraft::update()
 			switch(i)
 			{
 				case 0:
-					flash = 5.0/game->speedAdj;
-					pause = gunPause[i]/game->speedAdj;
+					flash = 5.0;
+					pause = gunPause[i];
 					gunFlash0[i] = (flash-pause)/flash;
 					if(gunActive[i])
 						gunFlash1[i] = (flash-pause)/flash;
@@ -719,16 +720,16 @@ void HeroAircraft::update()
 						gunFlash1[i] = 0.0;
 					break;
 				case 1:
-					flash = 10.0/game->speedAdj;
-					pause = gunPause[i]/game->speedAdj;
+					flash = 10.0;
+					pause = gunPause[i];
 					if(gunActive[i] && gunPause[i] < flash)
 						gunFlash0[i] = (flash-pause)/flash;
 					else
 						gunFlash0[i] = 0.0;
 					break;
 				case 2:
-					flash = 5.0/game->speedAdj;
-					pause = gunPause[i]/game->speedAdj;
+					flash = 5.0;
+					pause = gunPause[i];
 					if(gunActive[i])
 					{
 						if(gunPause[i] < flash)
@@ -797,12 +798,12 @@ void HeroAircraft::update()
 void HeroAircraft::drawGL()
 {
 	//-- draw hero
-	glPushMatrix();
-	glTranslatef(pos[0], pos[1], pos[2]);
-	if(!dontShow)
+	renderer_push_matrix();
+	renderer_translate(pos[0], pos[1], pos[2]);
+	if(dontShow <= 0.0f)
 	{
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glBindTexture(GL_TEXTURE_2D, heroTex);
+		renderer_set_color(1.0, 1.0, 1.0, 1.0);
+		renderer_bind_texture( heroTex);
 		drawQuad(size[0], size[1]);
 	}
 	else
@@ -810,19 +811,19 @@ void HeroAircraft::drawGL()
 		dontShow -= game->speedAdj;
 	}
 	//-- draw super shields in StatusDisplay to get better blend mode...
-	glPopMatrix();
+	renderer_pop_matrix();
 
 	if(superBomb)
 	{
 		float s = superBomb*0.1;
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		glBindTexture(GL_TEXTURE_2D, bombTex);
-		glPushMatrix();
-		glTranslatef(0.0, -15.0, HERO_Z);
-		glRotatef(IRAND, 0.0, 0.0, 1.0);
+		renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE);
+		renderer_bind_texture( bombTex);
+		renderer_push_matrix();
+		renderer_translate(0.0, -15.0, HERO_Z);
+		renderer_rotate(IRAND, 0.0, 0.0, 1.0);
 		drawQuad(s,s);
-		glPopMatrix();
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		renderer_pop_matrix();
+		renderer_set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 }
 

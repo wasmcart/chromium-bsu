@@ -1,3 +1,4 @@
+#include "Renderer.h"
 /*
  * Copyright (c) 2000 Mark B. Allan. All rights reserved.
  *
@@ -5236,15 +5237,15 @@ void textGeometryChromium (bool full)
 	if(!full)
 		Back_Face_Triangles = Back_Bevel_Triangles = Side_Triangles = false;
 
-	glBegin(GL_TRIANGLES);
+	renderer_begin(DRAW_TRIANGLES);
 	if( Front_Face_Triangles )
 	{
 		i = 0;
 		done = false;
 		while(!done)
 		{
-			glNormal3fv(data_Front_Face[i+1]);
-			glVertex3fv(data_Front_Face[i]);
+			renderer_set_normal_v(data_Front_Face[i+1]);
+			renderer_vertex_v(data_Front_Face[i]);
 			i+=2;
 			if(data_Front_Face[i][0] > 100.0)
 				done = true;
@@ -5256,8 +5257,8 @@ void textGeometryChromium (bool full)
 		done = false;
 		while(!done)
 		{
-			glNormal3fv(data_Front_Bevel[i+1]);
-			glVertex3fv(data_Front_Bevel[i]);
+			renderer_set_normal_v(data_Front_Bevel[i+1]);
+			renderer_vertex_v(data_Front_Bevel[i]);
 			i+=2;
 			if(data_Front_Bevel[i][0] > 100.0)
 				done = true;
@@ -5269,8 +5270,8 @@ void textGeometryChromium (bool full)
 		done = false;
 		while(!done)
 		{
-			glNormal3fv(data_Back_Face[i+1]);
-			glVertex3fv(data_Back_Face[i]);
+			renderer_set_normal_v(data_Back_Face[i+1]);
+			renderer_vertex_v(data_Back_Face[i]);
 			i+=2;
 			if(data_Back_Face[i][0] > 100.0)
 				done = true;
@@ -5282,8 +5283,8 @@ void textGeometryChromium (bool full)
 		done = false;
 		while(!done)
 		{
-			glNormal3fv(data_Back_Bevel[i+1]);
-			glVertex3fv(data_Back_Bevel[i]);
+			renderer_set_normal_v(data_Back_Bevel[i+1]);
+			renderer_vertex_v(data_Back_Bevel[i]);
 			i+=2;
 			if(data_Back_Bevel[i][0] > 100.0)
 				done = true;
@@ -5295,12 +5296,12 @@ void textGeometryChromium (bool full)
 		done = false;
 		while(!done)
 		{
-			glNormal3fv(data_Side[i+1]);
-			glVertex3fv(data_Side[i]);
+			renderer_set_normal_v(data_Side[i+1]);
+			renderer_vertex_v(data_Side[i]);
 			i+=2;
 			if(data_Side[i][0] > 100.0)
 				done = true;
 		}
 	}
-	glEnd();
+	renderer_end();
 }

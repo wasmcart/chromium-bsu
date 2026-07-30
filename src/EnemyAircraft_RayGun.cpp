@@ -48,7 +48,7 @@ void EnemyAircraft_RayGun::init(float *p, float randFact)
 	size[0] = 1.2;
 	size[1] = 1.2;
 	collisionMove = 0.2;
-	vel[1] =  0.03;
+	vel[1] =  0.03*0.60f;
 	randMoveX = 0.5+0.5*randMoveX;
 
 }
@@ -76,7 +76,7 @@ void EnemyAircraft_RayGun::update()
 
 	float	p[3] = { pos[0], pos[1], pos[2] };
 
-	if(fabs(a) < 1.5) //-- big center gun
+	if(fabs(a) < 1.5 && ageInterval(1)) //-- big center gun
 	{
 		v[1] = -0.6;
 		p[1] = pos[1]-0.5;
@@ -101,8 +101,8 @@ void EnemyAircraft_RayGun::move()
 		tmps = ((3.0-tmpd)/3.0)*(0.1*sin(age*0.25));
 	if(fabs(diff[1]) < 7.0)
 		diff[1] *= 0.1;
-	lastMoveX = (0.975*lastMoveX)+(0.0020*diff[0]);
-	lastMoveY = (0.90*lastMoveY)+(0.001*diff[1]);
+	lastMoveX = (powf(0.975f,game->speedAdj)*lastMoveX)+(0.0020*game->speedAdj*diff[0]);
+	lastMoveY = (powf(0.90f,game->speedAdj)*lastMoveY)+(0.001*game->speedAdj*diff[1]);
 	pos[0] += game->speedAdj*(randMoveX*lastMoveX * (game->gameSkill+0.1) + tmps);
 	pos[1] += game->speedAdj*(lastMoveY+vel[1] * (game->gameSkill+0.1));
 

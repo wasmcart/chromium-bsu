@@ -77,8 +77,8 @@ void EnemyAircraft_Boss01::update()
 	if(fabs(a) < 5.0)
 	{
 		shootVec[1] = -0.65;
-		preFire = ((int)age%6)/6.0;
-		if( !((int)age%6) )
+		preFire = fmod(age, 6.0f)/6.0f;
+		if( ageInterval(6) )
 		{
 			shootSwap = !shootSwap;
 			if(shootSwap)
@@ -107,11 +107,11 @@ void EnemyAircraft_Boss01::update()
 	//-- add Gnats
 	if( !(((int)age/512)%2) )
 	{
-		if( !(((int)age/64)%2) && !((int)age%5) )
+		if( !(((int)age/64)%2) && ageInterval(5) )
 		{
 			p[0] += 1.7;
 			p[1] += 1.2;
-			tmpAircraft = game->itemAdd->dynamicEnemyAdd(EnemyGnat, p, game->gameFrame+2);
+			tmpAircraft = game->itemAdd->dynamicEnemyAdd(EnemyGnat, p, game->gameTime+0.04f);
 			tmpAircraft->over = this;
 			tmpAircraft->setTarget(this);
 		}
@@ -135,19 +135,19 @@ void EnemyAircraft_Boss01::move()
 	else
 		approachDist = 12.0*(2.0-game->gameSkill);
 
-	if(fabs(diff[1]) < (approachDist+2.0*sin(game->frame*0.05)) )
+	if(fabs(diff[1]) < (approachDist+2.0*sin(game->gameTime*2.5f)) )
 		diff[1] = diff[1] * diff[1]/approachDist;
 	diff[0] += 5.0*sin(age*0.1);
 
 	if( (((int)age/512)%2) )
 	{
-		lastMoveX = (0.98*lastMoveX)+(0.0010*game->gameSkill*diff[0]);
-		lastMoveY = (0.90*lastMoveY)+(0.0020*game->gameSkill*diff[1]);
+		lastMoveX = (powf(0.98f,game->speedAdj)*lastMoveX)+(0.0010*game->speedAdj*game->gameSkill*diff[0]);
+		lastMoveY = (powf(0.90f,game->speedAdj)*lastMoveY)+(0.0020*game->speedAdj*game->gameSkill*diff[1]);
 	}
 	else //-- release gnats
 	{
-		lastMoveX = (0.90*lastMoveX)+(0.0003*game->gameSkill*diff[0]);
-		lastMoveY = (0.90*lastMoveY)+(0.0010*game->gameSkill*diff[1]);
+		lastMoveX = (powf(0.90f,game->speedAdj)*lastMoveX)+(0.0003*game->speedAdj*game->gameSkill*diff[0]);
+		lastMoveY = (powf(0.90f,game->speedAdj)*lastMoveY)+(0.0010*game->speedAdj*game->gameSkill*diff[1]);
 	}
 	pos[0] += game->speedAdj*(lastMoveX);
 	pos[1] += game->speedAdj*(lastMoveY+vel[1]);
