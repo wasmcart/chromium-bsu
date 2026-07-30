@@ -60,6 +60,20 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: artifacts
+
+      # v0.1.0 shipped with no attached .wasc: the release glob assumed
+      # artifacts/<name>/ and did not match, and action-gh-release treats "no
+      # files matched" as a warning rather than an error -- so the run went green
+      # with an empty release. List the tree and fail loudly instead.
+      - name: Locate the packed cart
+        run: |
+          find artifacts -type f -print
+          wasc="$(find artifacts -name '*.wasc' -type f | head -1)"
+          if [ -z "$wasc" ]; then
+            echo "::error::no .wasc found in the downloaded artifacts"
+            exit 1
+          fi
+          echo "WASC_PATH=$wasc" >> "$GITHUB_ENV"
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -69,4 +83,4 @@ jobs:
 
             Runs on all wasmcart hosts: browser, Node.js, wasmcart-native, and RetroArch.
             ES 3.0 renderer — no GL translation layers needed.
-          files: artifacts/chromium_bsu/*.wasc
+          files: ${{ env.WASC_PATH }}
