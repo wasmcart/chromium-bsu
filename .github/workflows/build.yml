@@ -6,16 +6,35 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  # Pinned: emscripten changes codegen between versions, and a game that built
+  # last month should still build today.
+  EMSDK_VERSION: 4.0.3
+
 jobs:
   build-wasc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: '4.0.3'
+      # Installed directly from upstream rather than via a third-party action.
+      # mymindstorm/setup-emsdk@v14 targets Node 20, which GitHub deprecated, so
+      # every run printed a deprecation warning -- and a warning nobody can fix
+      # from here trains people to ignore warnings. This is a git clone and one
+      # script; it has no such dependency, and it pins the emsdk version.
+      - name: Install Emscripten
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git ~/emsdk
+          cd ~/emsdk
+          ./emsdk install ${{ env.EMSDK_VERSION }}
+          ./emsdk activate ${{ env.EMSDK_VERSION }}
+          # Put emcc/em++ on PATH for every later step in this job.
+          . ./emsdk_env.sh
+          echo "$EMSDK/upstream/emscripten" >> "$GITHUB_PATH"
+          echo "$EMSDK" >> "$GITHUB_PATH"
+
+      - name: Show Emscripten version
+        run: emcc --version | head -1
 
       - name: Build
         run: |
