@@ -1,9 +1,18 @@
 # Chromium B.S.U. — wasmcart port
 
+[![build](https://img.shields.io/github/actions/workflow/status/wasmcart/chromium-bsu/build.yml?label=build)](https://github.com/wasmcart/chromium-bsu/actions/workflows/build.yml)
+[![release](https://img.shields.io/github/v/release/wasmcart/chromium-bsu)](https://github.com/wasmcart/chromium-bsu/releases/latest)
+[![license](https://img.shields.io/badge/license-Clarified%20Artistic-blue)](COPYING)
+[![wasmcart](https://img.shields.io/badge/wasmcart-.wasc%20cart-8a2be2)](https://wasmcart.org)
+
 [Chromium B.S.U.](https://chromium-bsu.sourceforge.net/) built as a
-[wasmcart](https://github.com/wasmcart/wasmcart) GL cart: one `.wasc` file that
-runs on any conforming host — browser, Node, the native player, or a libretro
-core in RetroArch.
+[wasmcart](https://wasmcart.org) GL cart: one `.wasc` file that runs on any
+conforming host — browser, Node, the native player, or a libretro core in
+RetroArch.
+
+**[wasmcart.org](https://wasmcart.org)** · [the spec and reference
+host](https://github.com/wasmcart/wasmcart) ·
+[download the cart](https://github.com/wasmcart/chromium-bsu/releases/latest)
 
 Upstream is unchanged in spirit. This is a real source port, not a rewrite: the
 game logic, assets and feel are the original's.
@@ -68,6 +77,14 @@ which wipes on reboot.
 
 The upstream autotools build is untouched and still works. See `README`,
 `README.install` and `INSTALL`, plus the manual page, FAQ and info pages.
+
+## More
+
+- **[wasmcart.org](https://wasmcart.org)** — what wasmcart is, and other carts
+- [wasmcart/wasmcart](https://github.com/wasmcart/wasmcart) — the spec, the ABI
+  header, and the reference hosts
+- [Releases](https://github.com/wasmcart/chromium-bsu/releases) — prebuilt
+  `.wasc`, no toolchain needed
 
 ## Licensing
 
