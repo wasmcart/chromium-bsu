@@ -64,6 +64,11 @@ wasmcart ones in step with upstream using that repo's
 `pack.sh` stages assets into `build/assets/` (gitignored) rather than `/tmp`,
 which wipes on reboot.
 
+## Building the original (non-wasmcart)
+
+The upstream autotools build is untouched and still works. See `README`,
+`README.install` and `INSTALL`, plus the manual page, FAQ and info pages.
+
 ## Licensing
 
 Unchanged from upstream: Chromium B.S.U. is under the Clarified Artistic License
