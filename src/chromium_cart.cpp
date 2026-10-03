@@ -238,6 +238,9 @@ wc_info_t* wc_get_info(void)
 {
     memset(&info, 0, sizeof(info));
     memset(&host_info, 0, sizeof(host_info));
+    /* The memset above already zeroes wheel_ptr: no scroll input, so the host
+     * writes no wc_wheel_t. Spelled out because the field is easy to miss. */
+    info.wheel_ptr = 0;
 
     info.version = WC_ABI_VERSION;
     info.width = DEFAULT_WIDTH;
