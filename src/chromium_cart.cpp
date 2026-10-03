@@ -45,7 +45,7 @@ static wc_pad_t pads[4];
 static wc_time_t time_info;
 
 /* Gamepad button edge detection */
-static uint16_t prev_buttons = 0;
+static uint32_t prev_buttons = 0;
 
 /* Frame timing */
 static int frame_count = 0;
@@ -111,8 +111,8 @@ static void handle_input(void)
 {
     Global *game = Global::getInstance();
     Config *config = Config::instance();
-    uint16_t buttons = pads[0].buttons;
-    uint16_t pressed = buttons & ~prev_buttons; /* newly pressed */
+    uint32_t buttons = pads[0].buttons;
+    uint32_t pressed = buttons & ~prev_buttons; /* newly pressed */
 
     if (game->gameMode == Global::Menu) {
         /* Menu navigation */
